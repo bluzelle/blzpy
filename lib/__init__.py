@@ -180,6 +180,9 @@ def new_client(options):
         gas_info['max_gas'] = 0
     options['gas_info'] = gas_info
 
+    if not ('debug' in options):
+        options['debug'] = False
+
     client = Client(options)
     client.private_key = SigningKey.from_string(mnemonic_to_private_key(
         options['mnemonic'], str_derivation_path=HD_PATH), curve=SECP256k1)
