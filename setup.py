@@ -13,7 +13,7 @@ setup(
     keywords = "bluzelle tendermint cosmos",
     url = "https://github.com/vbstreetz/blzpy",
     requires=['requests'],
-    packages=['src'],
+    packages=['bluzelle'],
     package_dir = {'bluzelle': 'lib'},
     long_description=read('Readme.md'),
     classifiers=[
