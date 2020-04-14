@@ -7,17 +7,26 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+address = os.getenv('ADDRESS', '')
+mnemonic = os.getenv('MNEMONIC', '')
+
 def new_client():
+    debug = False
+    try:
+        debug = distutils.util.strtobool(os.getenv('DEBUG', 'false'))
+    except Exception:
+        pass
+
     return bluzelle.new_client({
-        'address':  os.getenv('ADDRESS', ''),
-        'mnemonic': os.getenv('MNEMONIC', ''),
+        'address':  address,
+        'mnemonic': mnemonic,
         'uuid':     os.getenv('UUID', ''),
         'endpoint': os.getenv('ENDPOINT', ''),
         'chain_id':  os.getenv('CHAIN_ID', ''),
         'gas_info': {
             'max_fee': 4000001,
         },
-        'debug': distutils.util.strtobool(os.getenv('DEBUG', 'false')),
+        'debug': debug,
     })
 
 def key_values_to_dict(key_values):

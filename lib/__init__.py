@@ -1,1 +1,1 @@
-from .bluzelle import new_client, APIError
+from .bluzelle import new_client, APIError, OptionsError

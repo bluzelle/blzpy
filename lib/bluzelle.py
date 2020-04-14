@@ -5,7 +5,8 @@ import random
 import string
 import logging
 import time
-from hashlib import sha256
+import hashlib
+import bech32
 from .mnemonic_utils import mnemonic_to_private_key
 from ecdsa import SigningKey, SECP256k1
 
@@ -19,6 +20,11 @@ PUB_KEY_TYPE = "tendermint/PubKeySecp256k1"
 BROADCAST_MAX_RETRIES = 10
 BROADCAST_RETRY_INTERVAL_SECONDS = 1
 
+# client option validation error
+class OptionsError(Exception):
+    pass
+
+# general api error
 class APIError(Exception):
     pass
 
@@ -236,7 +242,7 @@ class Client:
             "sequence": str(self.account['sequence']),
         }
         payload = bytes(self.json_dumps(payload), 'utf-8')
-        return base64.b64encode(self.private_key.sign_deterministic(payload, hashfunc=sha256)).decode("utf-8")
+        return base64.b64encode(self.private_key.sign_deterministic(payload, hashfunc=hashlib.sha256)).decode("utf-8")
 
     def set_account(self):
         self.account = self.read_account()
@@ -266,26 +272,56 @@ class Client:
         logger.disabled = not self.options['debug']
         self.logger = logger
 
+    def verify_address(self):
+        pk = self.private_key.verifying_key.to_string("compressed")
 
+        h = hashlib.new('sha256')
+        h.update(pk)
+        s = h.digest()
+
+        h = hashlib.new('ripemd160')
+        h.update(s)
+        r = h.digest()
+
+        address = bech32.bech32_encode(ADDRESS_PREFIX, bech32.convertbits(r, 8, 5, True))
+        if address != self.options['address']:
+            raise OptionsError('bad credentials(verify your address and mnemonic)')
+
+
+# initialize new client with provided `options`
+# @param options
+#   @required address
+#   @required mnemonic
+#   @optional chain_id
+#   @optional endpoint
+#   @optional gas_info
+#   @optional debug
 def new_client(options):
     # validate options
+    if not ('address' in options):
+        raise OptionsError('address is required')
+
+    if not ('mnemonic' in options):
+        raise OptionsError('mnemonic is required')
+
+    gas_info = options.get('gas_info', {})
+    if type(gas_info) is not dict:
+        raise OptionsError('gas_info should be a dict of {gas_price, max_fee, max_gas}')
+    gas_info_keys = ["gas_price", "max_fee", "max_gas"]
+    for k in gas_info_keys:
+        v = gas_info.get(k, 0)
+        if type(v) is not int:
+            raise OptionsError('gas_info[%s] should be an int' % k)
+        gas_info[k] = v
+
+    if not ('debug' in options):
+        options['debug'] = False
+
     if not options.get('chain_id', None):
         options['chain_id'] = DEFAULT_CHAIN_ID
 
     if not options.get('endpoint', None):
         options['endpoint'] = DEFAULT_ENDPOINT
-
-    gas_info = options.get('gas_info', {})
-    if not gas_info.get('gas_price', 0):
-        gas_info['gas_price'] = 0
-    if not gas_info.get('max_fee', 0):
-        gas_info['max_fee'] = 0
-    if not gas_info.get('max_gas', 0):
-        gas_info['max_gas'] = 0
-    options['gas_info'] = gas_info
-
-    if not ('debug' in options):
-        options['debug'] = False
 
     client = Client(options)
 
@@ -295,7 +331,8 @@ def new_client(options):
         curve=SECP256k1
     )
 
-    # verify address (todo)
+    # verify address
+    client.verify_address()
 
     # logging
     client.setup_logging()

@@ -10,6 +10,7 @@ python-dotenv = "*"
 requests = "*"
 base58 = "*"
 ecdsa = "*"
+bech32 = "*"
 
 [requires]
 python_version = "3.7"

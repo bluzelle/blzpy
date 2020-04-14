@@ -18,7 +18,7 @@ setup(
     description = ("Python library for the Bluzelle Service."),
     keywords = "bluzelle tendermint cosmos",
     url = "https://github.com/vbstreetz/blzpy",
-    requires=['requests', 'base58', 'ecdsa'],
+    requires=['requests', 'base58', 'ecdsa', 'bech32'],
     packages=['bluzelle'],
     package_dir = {'bluzelle': 'lib'},
     long_description=read('Readme.md'),

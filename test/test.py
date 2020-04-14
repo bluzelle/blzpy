@@ -1,95 +1,136 @@
 #!/usr/bin/env python
 import unittest
 import time
+from .util import new_client, bluzelle, key_values_to_dict, mnemonic
 
-# todo
-if __name__ == '__main__':
-    from util import new_client, bluzelle, key_values_to_dict
-else:
-    from .util import new_client, bluzelle, key_values_to_dict
+class TestOptions(unittest.TestCase):
+    def test_requires_address(self):
+        with self.assertRaisesRegex(bluzelle.OptionsError, "address is required"):
+            bluzelle.new_client({})
 
-now = time.time()
-key1 = '%d' % (now)
-key2 = '%d' % (now + 1000)
-value1 = 'foo'
-value2 = 'bar'
-value3 = 'baz'
+    def test_requires_mnemonic(self):
+        with self.assertRaisesRegex(bluzelle.OptionsError, "mnemonic is required"):
+            bluzelle.new_client({
+                "address": "1"
+            })
+
+    def test_validates_gas_info(self):
+        with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info should be a dict of {gas_price, max_fee, max_gas}"):
+            bluzelle.new_client({
+                "address": "1",
+                "mnemonic": "1",
+                "gas_info": ""
+            })
+        with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info should be a dict of {gas_price, max_fee, max_gas}"):
+            bluzelle.new_client({
+                "address": "1",
+                "mnemonic": "1",
+                "gas_info": 1
+            })
+        with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info should be a dict of {gas_price, max_fee, max_gas}"):
+            bluzelle.new_client({
+                "address": "1",
+                "mnemonic": "1",
+                "gas_info": []
+            })
+        with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info\[gas_price\] should be an int"):
+            bluzelle.new_client({
+                "address": "1",
+                "mnemonic": "1",
+                "gas_info": {
+                    "gas_price": ""
+                }
+            })
+    def test_validates_mnemonic_and_address(self):
+        with self.assertRaisesRegex(bluzelle.OptionsError, "bad credentials\(verify your address and mnemonic\)"):
+            bluzelle.new_client({
+                "address": "1",
+                "mnemonic": mnemonic
+            })
 
 class TestMethods(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = new_client()
 
+    def setUp(self):
+        now = time.time()
+        self.key1 = '%d' % (now)
+        self.key2 = '%d' % (now + 1000)
+        self.value1 = 'foo'
+        self.value2 = 'bar'
+        self.value3 = 'baz'
+
     def test_create(self):
-        self.client.create(key1, value1)
+        self.client.create(self.key1, self.value1)
 
     def test_read(self):
-        self.client.create(key1, value1)
-        value = self.client.read(key1)
-        self.assertEqual(value, value1, 'read failed: %s != %s' % (value1, value2))
+        self.client.create(self.key1, self.value1)
+        value = self.client.read(self.key1)
+        self.assertEqual(value, self.value1, 'read failed: %s != %s' % (self.value1, self.value2))
 
     def test_update(self):
-        self.client.create(key1, value1)
-        self.client.update(key1, value2)
-        value = self.client.read(key1)
-        self.assertEqual(value, value2, 'update failed: %s != %s' % (value2, value))
-        self.assertNotEqual(value, value1, 'update failed: %s == %s' % (value2, value))
+        self.client.create(self.key1, self.value1)
+        self.client.update(self.key1, self.value2)
+        value = self.client.read(self.key1)
+        self.assertEqual(value, self.value2, 'update failed: %s != %s' % (self.value2, value))
+        self.assertNotEqual(value, self.value1, 'update failed: %s == %s' % (self.value2, value))
 
     def test_delete(self):
-        self.client.create(key1, value1)
-        self.client.delete(key1)
+        self.client.create(self.key1, self.value1)
+        self.client.delete(self.key1)
         with self.assertRaisesRegex(bluzelle.APIError, "key not found"):
-            self.client.read(key1)
+            self.client.read(self.key1)
 
     def test_rename(self):
-        self.client.create(key1, value1)
-        self.client.rename(key1, key2)
-        value = self.client.read(key2)
-        self.assertEqual(value, value1, 'rename failed: %s != %s' % (value1, value))
+        self.client.create(self.key1, self.value1)
+        self.client.rename(self.key1, self.key2)
+        value = self.client.read(self.key2)
+        self.assertEqual(value, self.value1, 'rename failed: %s != %s' % (self.value1, value))
         with self.assertRaisesRegex(bluzelle.APIError, "key not found"):
-            self.client.read(key1)
+            self.client.read(self.key1)
 
     def test_has(self):
-        self.client.create(key1, value1)
-        b = self.client.has(key1)
+        self.client.create(self.key1, self.value1)
+        b = self.client.has(self.key1)
         self.assertTrue(b, 'has failed: %s' % (b))
 
     def test_count(self):
         num = self.client.count()
-        self.client.create(key1, value1)
+        self.client.create(self.key1, self.value1)
         num2 = self.client.count()
         self.assertEqual(num+1, num2, 'count failed: %s != %s' % (num+1, num2))
 
     def test_keys(self):
         keys = self.client.keys()
-        self.assertTrue(not(key1 in keys), 'keys failed: %s found in keys %s' % (key1, keys))
-        self.client.create(key1, value1)
+        self.assertTrue(not(self.key1 in keys), 'keys failed: %s found in keys %s' % (self.key1, keys))
+        self.client.create(self.key1, self.value1)
         keys = self.client.keys()
-        self.assertTrue(key1 in keys, 'keys failed: %s not found in keys %s' % (key1, keys))
+        self.assertTrue(self.key1 in keys, 'keys failed: %s not found in keys %s' % (self.key1, keys))
 
     def test_key_values(self):
         key_values = key_values_to_dict(self.client.key_values())
-        self.assertTrue(not(key1 in key_values), 'key_values failed: %s found in keys %s' % (key1, key_values))
-        self.client.create(key1, value1)
+        self.assertTrue(not(self.key1 in key_values), 'key_values failed: %s found in keys %s' % (self.key1, key_values))
+        self.client.create(self.key1, self.value1)
         key_values = key_values_to_dict(self.client.key_values())
-        self.assertEqual(key_values[key1], value1, 'key_values failed: %s not found in keys %s' % (key1, key_values))
+        self.assertEqual(key_values[self.key1], self.value1, 'key_values failed: %s not found in keys %s' % (self.key1, key_values))
 
     def test_delete_all(self):
-        self.client.create(key1, value1)
-        self.client.create(key2, value1)
-        self.client.read(key1)
-        self.client.read(key1)
+        self.client.create(self.key1, self.value1)
+        self.client.create(self.key2, self.value1)
+        self.client.read(self.key1)
+        self.client.read(self.key1)
         self.client.delete_all()
         num = self.client.count()
         self.assertEqual(num, 0, 'delete failed: %s != %s' % (num, 0))
 
     def test_multi_update(self):
-        self.client.create(key1, value1)
-        self.client.create(key2, value1)
+        self.client.create(self.key1, self.value1)
+        self.client.create(self.key2, self.value1)
         with self.assertRaisesRegex(Exception, "not yet implemented"):
             data = {}
-            data[key1] = key1
-            data[key2] = key2
+            data[self.key1] = self.key1
+            data[self.key2] = self.key2
             self.client.multi_update(data)
 
     def test_read_account(self):
@@ -101,31 +142,31 @@ class TestMethods(unittest.TestCase):
         self.assertTrue(bool(version), 'version not defined %s' % (version))
 
     def test_tx_read(self):
-        self.client.create(key1, value1)
-        value = self.client.tx_read(key1)
-        self.assertEqual(value, value1, 'tx_read failed: %s != %s' % (value1, value2))
+        self.client.create(self.key1, self.value1)
+        value = self.client.tx_read(self.key1)
+        self.assertEqual(value, self.value1, 'tx_read failed: %s != %s' % (self.value1, self.value2))
 
     def test_tx_has(self):
-        self.client.create(key1, value1)
-        b = self.client.tx_has(key1)
+        self.client.create(self.key1, self.value1)
+        b = self.client.tx_has(self.key1)
         self.assertTrue(b, 'tx_has failed: %s' % (b))
 
     def test_tx_count(self):
         num = self.client.tx_count()
-        self.client.create(key1, value1)
+        self.client.create(self.key1, self.value1)
         num2 = self.client.tx_count()
         self.assertEqual(num+1, num2, 'tx_count failed: %s != %s' % (num+1, num2))
 
     def test_tx_keys(self):
         keys = self.client.tx_keys()
-        self.assertTrue(not(key1 in keys), 'keys failed: %s found in keys %s' % (key1, keys))
-        self.client.create(key1, value1)
+        self.assertTrue(not(self.key1 in keys), 'keys failed: %s found in keys %s' % (self.key1, keys))
+        self.client.create(self.key1, self.value1)
         keys = self.client.tx_keys()
-        self.assertTrue(key1 in keys, 'keys failed: %s not found in keys %s' % (key1, keys))
+        self.assertTrue(self.key1 in keys, 'keys failed: %s not found in keys %s' % (self.key1, keys))
 
     def test_tx_key_values(self):
         key_values = key_values_to_dict(self.client.tx_key_values())
-        self.assertTrue(not(key1 in key_values), 'key_values failed: %s found in keys %s' % (key1, key_values))
-        self.client.create(key1, value1)
+        self.assertTrue(not(self.key1 in key_values), 'key_values failed: %s found in keys %s' % (self.key1, key_values))
+        self.client.create(self.key1, self.value1)
         key_values = key_values_to_dict(self.client.tx_key_values())
-        self.assertEqual(key_values[key1], value1, 'key_values failed: %s not found in keys %s' % (key1, key_values))
+        self.assertEqual(key_values[self.key1], self.value1, 'key_values failed: %s not found in keys %s' % (self.key1, key_values))
