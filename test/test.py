@@ -59,3 +59,10 @@ class TestMethods(unittest.TestCase):
         self.client.create(key1, value1)
         num2 = self.client.count()
         self.assertEqual(num+1, num2, 'count failed: %s != %s' % (num+1, num2))
+
+    def test_keys(self):
+        keys = self.client.keys()
+        self.assertTrue(not(key1 in keys), 'keys failed: %s found in keys %s' % (key1, keys))
+        self.client.create(key1, value1)
+        keys = self.client.keys()
+        self.assertTrue(key1 in keys, 'keys failed: %s not found in keys %s' % (key1, keys))
