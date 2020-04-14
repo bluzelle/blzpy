@@ -91,3 +91,7 @@ class TestMethods(unittest.TestCase):
             data[key1] = key1
             data[key2] = key2
             self.client.multi_update(data)
+
+    def test_read_account(self):
+        account = self.client.read_account()
+        self.assertTrue(bool(account['address']), 'address not defined %s' % (account['address']))
