@@ -21,24 +21,38 @@ client = bluzelle.new_client({
     },
 })
 
-key = 'foo'
-value = 'bar'
+client.create('foo', 'bar')
+value = client.read(key)
+client.update(key, 'baz')
+client.delete(key)
+```
 
-print('creating %s=%s' % (key, value))
-try:
-    client.create(key, value)
-    print('created key')
-except bluzelle.APIError as err:
-    print('error creating key %s' % (err))
-else:
-	print()
-	print('reading value for key(%s)' % (key))
-	try:
-	    value = client.read(key)
-	    print('read value %s' % (value))
-	except bluzelle.APIError as err:
-	    print('error reading key %s' % (err))
+### Examples
 
+Copy `.env.sample` to `.env` and configure appropriately. You can also use this test [file](https://gist.github.com/vbstreetz/f05a982530311d155836e27d41c1f73a). Then run the example:
+
+```
+    DEBUG=false python examples/crud.py
+```
+
+### Tests
+
+The `tests/` can best be run in a [pipenv](https://github.com/pypa/pipenv) environment. To do so, initialize one with:
+
+```
+    pipenv --python 3
+```
+
+Install requirements:
+
+```
+    pipenv install
+```
+
+Then run the tests:
+
+```
+    python -m unittest test.test
 ```
 
 ### Licence
