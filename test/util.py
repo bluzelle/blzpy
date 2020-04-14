@@ -19,3 +19,9 @@ def new_client():
         },
         'debug': distutils.util.strtobool(os.getenv('DEBUG', 'false')),
     })
+
+def key_values_to_dict(key_values):
+    ret = {}
+    for key_value in key_values:
+        ret[key_value['key']] = key_value['value']
+    return ret

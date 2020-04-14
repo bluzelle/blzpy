@@ -50,6 +50,10 @@ class Client:
         url = "/crud/keys/{uuid}".format(uuid=self.options["uuid"])
         return self.api_query(url)['result']['keys']
 
+    def key_values(self):
+        url = "/crud/keyvalues/{uuid}".format(uuid=self.options["uuid"])
+        return self.api_query(url)['result']['keyvalues']
+
     # transactional methods
     def create(self, key, value):
         return self.send_transaction("post", "/crud/create", {

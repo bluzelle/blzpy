@@ -4,9 +4,9 @@ import time
 
 # todo
 if __name__ == '__main__':
-    from util import new_client, bluzelle
+    from util import new_client, bluzelle, key_values_to_dict
 else:
-    from .util import new_client, bluzelle
+    from .util import new_client, bluzelle, key_values_to_dict
 
 now = time.time()
 key1 = '%d' % (now)
@@ -66,3 +66,10 @@ class TestMethods(unittest.TestCase):
         self.client.create(key1, value1)
         keys = self.client.keys()
         self.assertTrue(key1 in keys, 'keys failed: %s not found in keys %s' % (key1, keys))
+
+    def test_key_values(self):
+        key_values = key_values_to_dict(self.client.key_values())
+        self.assertTrue(not(key1 in key_values), 'key_values failed: %s found in keys %s' % (key1, key_values))
+        self.client.create(key1, value1)
+        key_values = key_values_to_dict(self.client.key_values())
+        self.assertEqual(key_values[key1], value1, 'key_values failed: %s not found in keys %s' % (key1, key_values))
