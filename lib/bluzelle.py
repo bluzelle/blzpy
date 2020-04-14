@@ -81,6 +81,9 @@ class Client:
     def delete_all(self):
         return self.send_transaction("post", "/crud/deleteall", {})
 
+    def multi_update(self, payload):
+        raise Exception('not yet implemented')
+
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint

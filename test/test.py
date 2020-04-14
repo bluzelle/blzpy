@@ -82,3 +82,12 @@ class TestMethods(unittest.TestCase):
         self.client.delete_all()
         num = self.client.count()
         self.assertEqual(num, 0, 'delete failed: %s != %s' % (num, 0))
+
+    def test_multi_update(self):
+        self.client.create(key1, value1)
+        self.client.create(key2, value1)
+        with self.assertRaisesRegex(Exception, "not yet implemented"):
+            data = {}
+            data[key1] = key1
+            data[key2] = key2
+            self.client.multi_update(data)
