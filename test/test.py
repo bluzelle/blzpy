@@ -108,4 +108,17 @@ class TestMethods(unittest.TestCase):
     def test_tx_has(self):
         self.client.create(key1, value1)
         b = self.client.tx_has(key1)
-        self.assertTrue(b, 'has failed: %s' % (b))
+        self.assertTrue(b, 'tx_has failed: %s' % (b))
+
+    def test_tx_count(self):
+        num = self.client.tx_count()
+        self.client.create(key1, value1)
+        num2 = self.client.tx_count()
+        self.assertEqual(num+1, num2, 'tx_count failed: %s != %s' % (num+1, num2))
+
+    def test_tx_keys(self):
+        keys = self.client.tx_keys()
+        self.assertTrue(not(key1 in keys), 'keys failed: %s found in keys %s' % (key1, keys))
+        self.client.create(key1, value1)
+        keys = self.client.tx_keys()
+        self.assertTrue(key1 in keys, 'keys failed: %s not found in keys %s' % (key1, keys))
