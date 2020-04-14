@@ -109,6 +109,10 @@ class Client:
         res = self.send_transaction("post", "/crud/keys", {})
         return json.loads(res)['keys']
 
+    def tx_key_values(self):
+        res = self.send_transaction("post", "/crud/keyvalues", {})
+        return json.loads(res)['keyvalues']
+
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint

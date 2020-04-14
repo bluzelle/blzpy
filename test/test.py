@@ -122,3 +122,10 @@ class TestMethods(unittest.TestCase):
         self.client.create(key1, value1)
         keys = self.client.tx_keys()
         self.assertTrue(key1 in keys, 'keys failed: %s not found in keys %s' % (key1, keys))
+
+    def test_tx_key_values(self):
+        key_values = key_values_to_dict(self.client.tx_key_values())
+        self.assertTrue(not(key1 in key_values), 'key_values failed: %s found in keys %s' % (key1, key_values))
+        self.client.create(key1, value1)
+        key_values = key_values_to_dict(self.client.tx_key_values())
+        self.assertEqual(key_values[key1], value1, 'key_values failed: %s not found in keys %s' % (key1, key_values))
