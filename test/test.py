@@ -99,3 +99,8 @@ class TestMethods(unittest.TestCase):
     def test_version(self):
         version = self.client.version()
         self.assertTrue(bool(version), 'version not defined %s' % (version))
+
+    def test_tx_read(self):
+        self.client.create(key1, value1)
+        value = self.client.tx_read(key1)
+        self.assertEqual(value, value1, 'tx_read failed: %s != %s' % (value1, value2))

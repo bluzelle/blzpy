@@ -89,6 +89,12 @@ class Client:
     def multi_update(self, payload):
         raise Exception('not yet implemented')
 
+    def tx_read(self, key):
+        res = self.send_transaction("post", "/crud/read", {
+            "Key": key,
+        })
+        return json.loads(res)['value']
+
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint
