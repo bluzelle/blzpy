@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 import unittest
 import time
-from util import new_client, bluzelle
 
-key1 = '%d' % (time.time())
-key2 = '%d' % (time.time())
+# todo
+if __name__ == '__main__':
+    from util import new_client, bluzelle
+else:
+    from .util import new_client, bluzelle
+
+now = time.time()
+key1 = '%d' % (now)
+key2 = '%d' % (now + 1000)
 value1 = 'foo'
 value2 = 'bar'
 value3 = 'baz'
@@ -14,21 +20,31 @@ class TestMethods(unittest.TestCase):
     def setUpClass(cls):
         cls.client = new_client()
 
-    def test_crud(self):
-        # create
+    def test_create(self):
         self.client.create(key1, value1)
 
-        # read
+    def test_read(self):
+        self.client.create(key1, value1)
         value = self.client.read(key1)
-        self.assertEqual(value, value1, 'value mismatch %s != %s' % (value1, value2))
+        self.assertEqual(value, value1, 'read failed: %s != %s' % (value1, value2))
 
-        # update
+    def test_update(self):
+        self.client.create(key1, value1)
         self.client.update(key1, value2)
         value = self.client.read(key1)
-        self.assertEqual(value, value2, 'value mismatch %s != %s' % (value2, value))
-        self.assertNotEqual(value, value1, 'value mismatch %s == %s' % (value2, value))
+        self.assertEqual(value, value2, 'update failed: %s != %s' % (value2, value))
+        self.assertNotEqual(value, value1, 'update failed: %s == %s' % (value2, value))
 
-        # delete
+    def test_delete(self):
+        self.client.create(key1, value1)
         self.client.delete(key1)
+        with self.assertRaisesRegex(bluzelle.APIError, "key not found"):
+            self.client.read(key1)
+
+    def test_rename(self):
+        self.client.create(key1, value1)
+        self.client.rename(key1, key2)
+        value = self.client.read(key2)
+        self.assertEqual(value, value1, 'rename failed: %s != %s' % (value1, value))
         with self.assertRaisesRegex(bluzelle.APIError, "key not found"):
             self.client.read(key1)

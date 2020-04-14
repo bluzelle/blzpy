@@ -56,6 +56,12 @@ class Client:
             "Key": key,
         })
 
+    def rename(self, key, new_key):
+        return self.send_transaction("post", "/crud/rename", {
+            "Key": key,
+            "NewKey": new_key,
+        })
+
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint
