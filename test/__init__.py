@@ -6,7 +6,7 @@ import os
 import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from util import new_client
+from util import new_client, bluzelle
 
 key1 = '%d' % (time.time())
 key2 = '%d' % (time.time())
@@ -19,23 +19,24 @@ class TestMethods(unittest.TestCase):
     def setUpClass(cls):
         cls.client = new_client()
 
-    def test_create(self):
+    def test_crud(self):
+        # create
         self.client.create(key1, value1)
 
-    def test_read(self):
+        # read
         value = self.client.read(key1)
         self.assertEqual(value, value1, 'value mismatch %s != %s' % (value1, value2))
 
-    def test_update(self):
+        # update
         self.client.update(key1, value2)
         value = self.client.read(key1)
         self.assertEqual(value, value2, 'value mismatch %s != %s' % (value2, value))
         self.assertNotEqual(value, value1, 'value mismatch %s == %s' % (value2, value))
 
-    def test_delete(self):
+        # delete
         self.client.delete(key1)
-        value = self.client.read(key1)
-        self.assertRaisesRegex(bluzelle.APIError, "Key")
+        with self.assertRaisesRegex(bluzelle.APIError, "key not found"):
+            self.client.read(key1)
 
 if __name__ == '__main__':
     unittest.main()
