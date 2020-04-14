@@ -24,6 +24,32 @@ class Client:
     def __init__(self, options):
         self.options = options
 
+    # methods
+    def read_account(self):
+        url = "/auth/accounts/%s" % self.options["address"]
+        return self.api_query(url)['result']['value']
+
+    def read(self, key):
+        url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        return self.api_query(url)['result']['value']
+
+    def proven_read(self, key):
+        url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        return self.api_query(url)['result']['value']
+
+    def create(self, key, value):
+        return self.send_transaction("post", "/crud/create", {
+            "Key": key,
+            "Value": value,
+        })
+
+    def update(self, key, value):
+        return self.send_transaction("post", "/crud/update", {
+            "Key": key,
+            "Value": value,
+        })
+
+    # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint
         self.debug('querying url(%s)...' % (url))
@@ -54,47 +80,21 @@ class Client:
         self.debug('response (%s)...' % (data))
         return data
 
-    def read_account(self):
-        url = "/auth/accounts/%s" % self.options["address"]
-        return self.api_query(url)['result']['value']
-
-    def read(self, key):
-        url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return self.api_query(url)['result']['value']
-
-    def proven_read(self, key):
-        url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return self.api_query(url)['result']['value']
-
-    def create(self, key, value):
-        return self.send_transaction({
-            "key": key,
-            "value": value,
-            "api_request_method": "post",
-            "api_request_endpoint": "/crud/create"
-        })
-
-    def send_transaction(self, args):
+    def send_transaction(self, method, endpoint, payload):
         address = self.options['address']
-        payload = {
+        payload.update({
             "BaseReq": {
                 "chain_id": self.options['chain_id'],
                 "from": address,
             },
-            "Key": args['key'],
             "Owner": address,
             "UUID": self.options['uuid'],
-            "Value": args['value']
-        }
+        })
         #  validate transaction
-        txn = self.api_mutate(
-            args["api_request_method"],
-            args["api_request_endpoint"],
-            payload
-        )['value']
+        txn = self.api_mutate(method, endpoint, payload)['value']
 
         # set txn memo
-        txn['memo'] = make_random_string(32)
+        txn['memo'] = Client.make_random_string(32)
 
         # set txn gas
         fee = txn['fee']
@@ -129,10 +129,20 @@ class Client:
             TX_COMMAND,
             payload
         )
+
+        # https://github.com/bluzelle/blzjs/blob/45fe51f6364439fa88421987b833102cc9bcd7c0/src/swarmClient/cosmos.js#L240-L246
+        # note - as of right now (3/6/20) the responses returned by the Cosmos REST interface now look like this:
+        # success case: {"height":"0","txhash":"3F596D7E83D514A103792C930D9B4ED8DCF03B4C8FD93873AB22F0A707D88A9F","raw_log":"[]"}
+        # failure case: {"height":"0","txhash":"DEE236DEF1F3D0A92CB7EE8E442D1CE457EE8DB8E665BAC1358E6E107D5316AA","code":4,
+        #  "raw_log":"unauthorized: signature verification failed; verify correct account sequence and chain-id"}
+        #
+        # This is far from ideal, doesn't match their docs, and is probably going to change (again) in the future.
+
+        if 'data' in response:
+            self.account['sequence'] += 1
+            return bytes.fromhex(response['data']).decode("ASCII")
         if 'code' in response:
             raise APIError(response['raw_log'])
-        if 'data' in response:
-            return bytes.fromhex(response['data']).decode("ASCII")
 
     def sign_transaction(self, txn):
         payload = {
@@ -156,6 +166,10 @@ class Client:
 
     def json_dumps(self, payload):
         return json.dumps(payload, sort_keys=True, separators=(',', ':'))
+
+    @classmethod
+    def make_random_string(cls, size):
+        return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(size))
 
     def debug(self, log):
         if self.options['debug']:
@@ -183,17 +197,16 @@ def new_client(options):
         options['debug'] = False
 
     client = Client(options)
+
+    # private key
     client.private_key = SigningKey.from_string(
         mnemonic_to_private_key(options['mnemonic'], str_derivation_path=HD_PATH),
         curve=SECP256k1
     )
 
-    # todo: verify address
+    # verify address (todo)
 
+    # account
     client.account = client.read_account()
 
     return client
-
-
-def make_random_string(size):
-    return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(size))
