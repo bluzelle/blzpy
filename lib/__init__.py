@@ -49,6 +49,11 @@ class Client:
             "Value": value,
         })
 
+    def delete(self, key):
+        return self.send_transaction("delete", "/crud/delete", {
+            "Key": key,
+        })
+
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint
@@ -140,7 +145,7 @@ class Client:
 
         if 'data' in response:
             self.account['sequence'] += 1
-            return bytes.fromhex(response['data']).decode("ASCII")
+            return bytes.fromhex(response['data']).decode("ascii")
         if 'code' in response:
             raise APIError(response['raw_log'])
 

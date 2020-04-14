@@ -32,5 +32,10 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(value, value2, 'value mismatch %s != %s' % (value2, value))
         self.assertNotEqual(value, value1, 'value mismatch %s == %s' % (value2, value))
 
+    def test_delete(self):
+        self.client.delete(key1)
+        value = self.client.read(key1)
+        self.assertRaisesRegex(bluzelle.APIError, "Key")
+
 if __name__ == '__main__':
     unittest.main()
