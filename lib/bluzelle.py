@@ -30,6 +30,7 @@ class Client:
     def read_account(self):
         url = "/auth/accounts/%s" % self.options["address"]
         return self.api_query(url)['result']['value']
+
     def read(self, key):
         url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         return self.api_query(url)['result']['value']
@@ -53,6 +54,10 @@ class Client:
     def key_values(self):
         url = "/crud/keyvalues/{uuid}".format(uuid=self.options["uuid"])
         return self.api_query(url)['result']['keyvalues']
+
+    def version(self):
+        url = "/node_info"
+        return self.api_query(url)['application_version']['version']
 
     # transactional methods
     def create(self, key, value):

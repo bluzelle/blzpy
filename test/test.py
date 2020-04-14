@@ -95,3 +95,7 @@ class TestMethods(unittest.TestCase):
     def test_read_account(self):
         account = self.client.read_account()
         self.assertTrue(bool(account['address']), 'address not defined %s' % (account['address']))
+
+    def test_version(self):
+        version = self.client.version()
+        self.assertTrue(bool(version), 'version not defined %s' % (version))
