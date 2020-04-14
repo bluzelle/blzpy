@@ -73,3 +73,12 @@ class TestMethods(unittest.TestCase):
         self.client.create(key1, value1)
         key_values = key_values_to_dict(self.client.key_values())
         self.assertEqual(key_values[key1], value1, 'key_values failed: %s not found in keys %s' % (key1, key_values))
+
+    def test_delete_all(self):
+        self.client.create(key1, value1)
+        self.client.create(key2, value1)
+        self.client.read(key1)
+        self.client.read(key1)
+        self.client.delete_all()
+        num = self.client.count()
+        self.assertEqual(num, 0, 'delete failed: %s != %s' % (num, 0))

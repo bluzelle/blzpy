@@ -78,6 +78,9 @@ class Client:
             "NewKey": new_key,
         })
 
+    def delete_all(self):
+        return self.send_transaction("post", "/crud/deleteall", {})
+
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint
