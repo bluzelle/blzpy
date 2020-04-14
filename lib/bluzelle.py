@@ -26,11 +26,10 @@ class Client:
     def __init__(self, options):
         self.options = options
 
-    # methods
+    # query methods
     def read_account(self):
         url = "/auth/accounts/%s" % self.options["address"]
         return self.api_query(url)['result']['value']
-
     def read(self, key):
         url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         return self.api_query(url)['result']['value']
@@ -39,6 +38,15 @@ class Client:
         url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         return self.api_query(url)['result']['value']
 
+    def has(self, key):
+        url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        return self.api_query(url)['result']['has']
+
+    def count(self):
+        url = "/crud/count/{uuid}".format(uuid=self.options["uuid"])
+        return int(self.api_query(url)['result']['count'])
+
+    # transactional methods
     def create(self, key, value):
         return self.send_transaction("post", "/crud/create", {
             "Key": key,
@@ -61,10 +69,6 @@ class Client:
             "Key": key,
             "NewKey": new_key,
         })
-
-    def has(self, key):
-        url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return self.api_query(url)['result']['has']
 
     # api
     def api_query(self, endpoint):

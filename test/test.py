@@ -53,3 +53,9 @@ class TestMethods(unittest.TestCase):
         self.client.create(key1, value1)
         b = self.client.has(key1)
         self.assertTrue(b, 'has failed: %s' % (b))
+
+    def test_count(self):
+        num = self.client.count()
+        self.client.create(key1, value1)
+        num2 = self.client.count()
+        self.assertEqual(num+1, num2, 'count failed: %s != %s' % (num+1, num2))
