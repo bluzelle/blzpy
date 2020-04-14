@@ -62,6 +62,10 @@ class Client:
             "NewKey": new_key,
         })
 
+    def has(self, key):
+        url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        return self.api_query(url)['result']['has']
+
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint

@@ -48,3 +48,8 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(value, value1, 'rename failed: %s != %s' % (value1, value))
         with self.assertRaisesRegex(bluzelle.APIError, "key not found"):
             self.client.read(key1)
+
+    def test_has(self):
+        self.client.create(key1, value1)
+        b = self.client.has(key1)
+        self.assertTrue(b, 'has failed: %s' % (b))
