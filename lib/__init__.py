@@ -3,6 +3,7 @@ import json
 import base64
 import random
 import string
+import logging
 from hashlib import sha256
 from .mnemonic_utils import mnemonic_to_private_key
 from ecdsa import SigningKey, SECP256k1
@@ -57,32 +58,32 @@ class Client:
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint
-        self.debug('querying url(%s)...' % (url))
+        self.logger.debug('querying url(%s)...' % (url))
         response = requests.get(url)
         error = self.get_response_error(response)
         if error:
             raise error
         data = response.json()
-        self.debug('response (%s)...' % (data))
+        self.logger.debug('response (%s)...' % (data))
         return data
 
     def api_mutate(self, method, endpoint, payload):
         url = self.options['endpoint'] + endpoint
-        self.debug('mutating url({url}), method({method})...'.format(url=url, method=method))
+        self.logger.debug('mutating url({url}), method({method})...'.format(url=url, method=method))
         payload = self.json_dumps(payload)
-        self.debug("%s" % payload)
+        self.logger.debug("%s" % payload)
         response = getattr(requests, method)(
             url,
             data=payload,
             headers={"content-type": "application/x-www-form-urlencoded"},
             verify=False
         )
-        self.debug("%s" % response.text)
+        self.logger.debug("%s" % response.text)
         error = self.get_response_error(response)
         if error:
             raise error
         data = response.json()
-        self.debug('response (%s)...' % (data))
+        self.logger.debug('response (%s)...' % (data))
         return data
 
     def send_transaction(self, method, endpoint, payload):
@@ -176,9 +177,16 @@ class Client:
     def make_random_string(cls, size):
         return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(size))
 
-    def debug(self, log):
-        if self.options['debug']:
-            print(log)
+    def setup_logging(self):
+        logger = logging.getLogger('bluzelle')
+        logger.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
+        logger.disabled = not self.options['debug']
+        self.logger = logger
 
 
 def new_client(options):
@@ -210,6 +218,9 @@ def new_client(options):
     )
 
     # verify address (todo)
+
+    # logging
+    client.setup_logging()
 
     # account
     client.account = client.read_account()
