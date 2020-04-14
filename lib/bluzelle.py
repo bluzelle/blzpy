@@ -105,6 +105,10 @@ class Client:
         res = self.send_transaction("post", "/crud/count", {})
         return int(json.loads(res)['count'])
 
+    def tx_keys(self):
+        res = self.send_transaction("post", "/crud/keys", {})
+        return json.loads(res)['keys']
+
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint
