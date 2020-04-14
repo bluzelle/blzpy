@@ -28,7 +28,7 @@ class Client:
         url = self.options['endpoint'] + endpoint
         self.debug('querying url(%s)...' % (url))
         response = requests.get(url)
-        error = self.response_has_error(response)
+        error = self.get_response_error(response)
         if error:
             raise error
         data = response.json()
@@ -37,7 +37,7 @@ class Client:
 
     def api_mutate(self, method, endpoint, payload):
         url = self.options['endpoint'] + endpoint
-        self.debug('mutating %s(%s)...' % (method, url))
+        self.debug('mutating url({url}), method({method})...'.format(url=url, method=method))
         payload = self.json_dumps(payload)
         self.debug("%s" % payload)
         response = getattr(requests, method)(
@@ -47,7 +47,7 @@ class Client:
             verify=False
         )
         self.debug("%s" % response.text)
-        error = self.response_has_error(response)
+        error = self.get_response_error(response)
         if error:
             raise error
         data = response.json()
@@ -55,15 +55,15 @@ class Client:
         return data
 
     def read_account(self):
-        url = "/auth/accounts/" + self.options["address"]
+        url = "/auth/accounts/%s" % self.options["address"]
         return self.api_query(url)['result']['value']
 
     def read(self, key):
-        url = "/crud/read/" + self.options["uuid"] + "/" + key
+        url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         return self.api_query(url)['result']['value']
 
     def proven_read(self, key):
-        url = "/crud/pread/" + self.options["uuid"] + "/" + key
+        url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         return self.api_query(url)['result']['value']
 
     def create(self, key, value):
@@ -119,12 +119,11 @@ class Client:
             "sequence": str(self.account['sequence'])
         }]
 
+        # broadcast
         payload = {
             "tx": txn,
             "mode": "block"
         }
-
-        # broadcast
         response = self.api_mutate(
             "post",
             TX_COMMAND,
@@ -147,7 +146,7 @@ class Client:
         payload = bytes(self.json_dumps(payload), 'utf-8')
         return base64.b64encode(self.private_key.sign_deterministic(payload, hashfunc=sha256)).decode("utf-8")
 
-    def response_has_error(self, response):
+    def get_response_error(self, response):
         error = response.json().get('error', '')
         if error:
             return APIError(error)
@@ -184,8 +183,10 @@ def new_client(options):
         options['debug'] = False
 
     client = Client(options)
-    client.private_key = SigningKey.from_string(mnemonic_to_private_key(
-        options['mnemonic'], str_derivation_path=HD_PATH), curve=SECP256k1)
+    client.private_key = SigningKey.from_string(
+        mnemonic_to_private_key(options['mnemonic'], str_derivation_path=HD_PATH),
+        curve=SECP256k1
+    )
 
     # todo: verify address
 
