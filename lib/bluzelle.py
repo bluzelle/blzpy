@@ -95,6 +95,12 @@ class Client:
         })
         return json.loads(res)['value']
 
+    def tx_has(self, key):
+        res = self.send_transaction("post", "/crud/has", {
+            "Key": key,
+        })
+        return json.loads(res)['has']
+
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint

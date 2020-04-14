@@ -104,3 +104,8 @@ class TestMethods(unittest.TestCase):
         self.client.create(key1, value1)
         value = self.client.tx_read(key1)
         self.assertEqual(value, value1, 'tx_read failed: %s != %s' % (value1, value2))
+
+    def test_tx_has(self):
+        self.client.create(key1, value1)
+        b = self.client.tx_has(key1)
+        self.assertTrue(b, 'has failed: %s' % (b))
