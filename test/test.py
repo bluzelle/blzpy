@@ -203,3 +203,9 @@ class TestMethods(unittest.TestCase):
         self.client.renew_lease(self.key1, self.lease2)
         lease = self.client.get_lease(self.key1)
         self.assertTrue(lease > self.lease1, 'renew_lease failed: %s !> %s' % (lease, self.lease1))
+
+    def test_renew_lease_all(self):
+        self.client.create(self.key1, self.value1, self.lease1)
+        self.client.renew_lease_all(self.lease2)
+        lease = self.client.get_lease(self.key1)
+        self.assertTrue(lease > self.lease1, 'renew_lease_all failed: %s !> %s' % (lease, self.lease1))

@@ -148,6 +148,11 @@ class Client:
             "Lease": str(lease),
         })
 
+    def renew_lease_all(self, lease):
+        self.send_transaction("post", "/crud/renewleaseall", {
+            "Lease": str(lease),
+        })
+
     # api
     def api_query(self, endpoint):
         url = self.options['endpoint'] + endpoint
