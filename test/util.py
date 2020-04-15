@@ -11,9 +11,10 @@ address = os.getenv('ADDRESS', '')
 mnemonic = os.getenv('MNEMONIC', '')
 
 def new_client():
-    debug = False
+    d = os.getenv('DEBUG', 'false')
+    debug = d == 'm' # 🤔
     try:
-        debug = distutils.util.strtobool(os.getenv('DEBUG', 'false'))
+        debug = distutils.util.strtobool(d)
     except Exception:
         pass
 

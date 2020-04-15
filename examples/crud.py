@@ -9,6 +9,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+d = os.getenv('DEBUG', 'false')
+debug = d == 'm' # 🤔
+try:
+    debug = distutils.util.strtobool(d)
+except Exception:
+    pass
+
 client = bluzelle.new_client({
     'address':  os.getenv('ADDRESS', ''),
     'mnemonic': os.getenv('MNEMONIC', ''),
@@ -18,7 +25,7 @@ client = bluzelle.new_client({
     'gas_info': {
         'max_fee': 4000001,
     },
-    'debug': distutils.util.strtobool(os.getenv('DEBUG', 'false')),
+    'debug': debug,
 })
 
 key = '%i' % time.time()

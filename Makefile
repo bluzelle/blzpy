@@ -10,7 +10,10 @@ test:
 test-options:
 	@python -m unittest test.test.TestOptions.test_$o
 
+example:
+	@python examples/crud.py
+
 shell:
 	@python3 -m pipenv shell
 
-.PHONY: shell test-options test testall
+.PHONY: shell example test-options test testall

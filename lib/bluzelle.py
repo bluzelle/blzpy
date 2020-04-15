@@ -241,7 +241,9 @@ class Client:
             "msgs": txn["msg"],
             "sequence": str(self.account['sequence']),
         }
-        payload = bytes(self.json_dumps(payload), 'utf-8')
+        payload = self.json_dumps(payload)
+        self.logger.debug("sign %s" % payload)
+        payload = bytes(payload, 'utf-8')
         return base64.b64encode(self.private_key.sign_deterministic(payload, hashfunc=hashlib.sha256)).decode("utf-8")
 
     def set_account(self):
