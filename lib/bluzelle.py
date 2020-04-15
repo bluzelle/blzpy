@@ -66,15 +66,17 @@ class Client:
         return self.api_query(url)['application_version']['version']
 
     # transactional methods
-    def create(self, key, value):
+    def create(self, key, value, lease = 0):
         return self.send_transaction("post", "/crud/create", {
             "Key": key,
+            "Lease": str(lease),
             "Value": value,
         })
 
-    def update(self, key, value):
+    def update(self, key, value, lease = 0):
         return self.send_transaction("post", "/crud/update", {
             "Key": key,
+            "Lease": str(lease),
             "Value": value,
         })
 
