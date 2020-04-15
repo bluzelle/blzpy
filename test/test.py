@@ -60,6 +60,8 @@ class TestMethods(unittest.TestCase):
         self.value1 = 'foo'
         self.value2 = 'bar'
         self.value3 = 'baz'
+        self.lease1 = 10
+        self.lease2 = 20
 
     def test_create(self):
         self.client.create(self.key1, self.value1)
@@ -67,7 +69,7 @@ class TestMethods(unittest.TestCase):
     def test_read(self):
         self.client.create(self.key1, self.value1)
         value = self.client.read(self.key1)
-        self.assertEqual(value, self.value1, 'read failed: %s != %s' % (self.value1, self.value2))
+        self.assertEqual(value, self.value1, 'read failed: %s != %s' % (value, self.value1))
 
     def test_update(self):
         self.client.create(self.key1, self.value1)
@@ -170,3 +172,8 @@ class TestMethods(unittest.TestCase):
         self.client.create(self.key1, self.value1)
         key_values = key_values_to_dict(self.client.tx_key_values())
         self.assertEqual(key_values[self.key1], self.value1, 'key_values failed: %s not found in keys %s' % (self.key1, key_values))
+
+    def test_get_lease(self):
+        self.client.create(self.key1, self.value1, self.lease1)
+        lease = self.client.get_lease(self.key1)
+        self.assertEqual(lease, self.lease1, 'get_lease failed: %s != %s' % (lease, self.lease1))
