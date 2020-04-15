@@ -176,4 +176,14 @@ class TestMethods(unittest.TestCase):
     def test_get_lease(self):
         self.client.create(self.key1, self.value1, self.lease1)
         lease = self.client.get_lease(self.key1)
-        self.assertEqual(lease, self.lease1, 'get_lease failed: %s != %s' % (lease, self.lease1))
+        self.assertTrue(lease <= self.lease1, 'get_lease failed: %s !< %s' % (lease, self.lease1))
+
+    def test_tx_get_lease(self):
+        self.client.create(self.key1, self.value1, self.lease1)
+        lease = self.client.tx_get_lease(self.key1)
+        self.assertTrue(lease <= self.lease1, 'tx_get_lease failed: %s !< %s' % (lease, self.lease1))
+
+    def test_get_n_shortest_leases(self):
+        self.client.create(self.key1, self.value1, self.lease1)
+        keyleases = self.client.get_n_shortest_leases(1)
+        self.assertTrue(len(keyleases) != 0, 'get_n_shortest_leases failed')

@@ -101,6 +101,10 @@ class Client:
         url = "/crud/getlease/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         return int(self.api_query(url)['result']['lease'])
 
+    def get_n_shortest_leases(self, n):
+        url = "/crud/getnshortestlease/{uuid}/{n}".format(uuid=self.options["uuid"], n=n)
+        return self.api_query(url)['result']['keyleases']
+
     def tx_read(self, key):
         res = self.send_transaction("post", "/crud/read", {
             "Key": key,
@@ -124,6 +128,12 @@ class Client:
     def tx_key_values(self):
         res = self.send_transaction("post", "/crud/keyvalues", {})
         return json.loads(res)['keyvalues']
+
+    def tx_get_lease(self, key):
+        res = self.send_transaction("post", "/crud/getlease", {
+            "Key": key,
+        })
+        return int(json.loads(res)['lease'])
 
     # api
     def api_query(self, endpoint):
