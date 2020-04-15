@@ -65,7 +65,52 @@ class Client:
         url = "/node_info"
         return self.api_query(url)['application_version']['version']
 
-    # transactional methods
+    def get_lease(self, key):
+        url = "/crud/getlease/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        return int(self.api_query(url)['result']['lease'])
+
+    def get_n_shortest_leases(self, n):
+        url = "/crud/getnshortestlease/{uuid}/{n}".format(uuid=self.options["uuid"], n=n)
+        return self.api_query(url)['result']['keyleases']
+
+    #query tx methods
+    def tx_read(self, key):
+        res = self.send_transaction("post", "/crud/read", {
+            "Key": key,
+        })
+        return json.loads(res)['value']
+
+    def tx_has(self, key):
+        res = self.send_transaction("post", "/crud/has", {
+            "Key": key,
+        })
+        return json.loads(res)['has']
+
+    def tx_count(self):
+        res = self.send_transaction("post", "/crud/count", {})
+        return int(json.loads(res)['count'])
+
+    def tx_keys(self):
+        res = self.send_transaction("post", "/crud/keys", {})
+        return json.loads(res)['keys']
+
+    def tx_key_values(self):
+        res = self.send_transaction("post", "/crud/keyvalues", {})
+        return json.loads(res)['keyvalues']
+
+    def tx_get_lease(self, key):
+        res = self.send_transaction("post", "/crud/getlease", {
+            "Key": key,
+        })
+        return int(json.loads(res)['lease'])
+
+    def tx_get_n_shortest_leases(self, n):
+        res = self.send_transaction("post", "/crud/getnshortestlease", {
+            "N": n,
+        })
+        return json.loads(res)['keyleases']
+
+    # mutate methods
     def create(self, key, value, lease = 0):
         return self.send_transaction("post", "/crud/create", {
             "Key": key,
@@ -97,43 +142,11 @@ class Client:
     def multi_update(self, payload):
         raise Exception('not yet implemented')
 
-    def get_lease(self, key):
-        url = "/crud/getlease/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return int(self.api_query(url)['result']['lease'])
-
-    def get_n_shortest_leases(self, n):
-        url = "/crud/getnshortestlease/{uuid}/{n}".format(uuid=self.options["uuid"], n=n)
-        return self.api_query(url)['result']['keyleases']
-
-    def tx_read(self, key):
-        res = self.send_transaction("post", "/crud/read", {
+    def renew_lease(self, key, lease):
+        self.send_transaction("post", "/crud/renewlease", {
             "Key": key,
+            "Lease": str(lease),
         })
-        return json.loads(res)['value']
-
-    def tx_has(self, key):
-        res = self.send_transaction("post", "/crud/has", {
-            "Key": key,
-        })
-        return json.loads(res)['has']
-
-    def tx_count(self):
-        res = self.send_transaction("post", "/crud/count", {})
-        return int(json.loads(res)['count'])
-
-    def tx_keys(self):
-        res = self.send_transaction("post", "/crud/keys", {})
-        return json.loads(res)['keys']
-
-    def tx_key_values(self):
-        res = self.send_transaction("post", "/crud/keyvalues", {})
-        return json.loads(res)['keyvalues']
-
-    def tx_get_lease(self, key):
-        res = self.send_transaction("post", "/crud/getlease", {
-            "Key": key,
-        })
-        return int(json.loads(res)['lease'])
 
     # api
     def api_query(self, endpoint):

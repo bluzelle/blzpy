@@ -57,6 +57,7 @@ class TestMethods(unittest.TestCase):
         now = time.time()
         self.key1 = '%d' % (now)
         self.key2 = '%d' % (now + 1000)
+        self.key3 = '%d' % (now + 2000)
         self.value1 = 'foo'
         self.value2 = 'bar'
         self.value3 = 'baz'
@@ -185,5 +186,20 @@ class TestMethods(unittest.TestCase):
 
     def test_get_n_shortest_leases(self):
         self.client.create(self.key1, self.value1, self.lease1)
+        self.client.create(self.key2, self.value1, self.lease1)
+        self.client.create(self.key3, self.value1, self.lease1)
         keyleases = self.client.get_n_shortest_leases(1)
-        self.assertTrue(len(keyleases) != 0, 'get_n_shortest_leases failed')
+        self.assertTrue(len(keyleases) == 2, 'get_n_shortest_leases failed')
+
+    def test_tx_get_n_shortest_leases(self):
+        self.client.create(self.key1, self.value1, self.lease1)
+        self.client.create(self.key2, self.value1, self.lease1)
+        self.client.create(self.key3, self.value1, self.lease1)
+        keyleases = self.client.tx_get_n_shortest_leases(2)
+        self.assertTrue(len(keyleases) == 2, 'tx_get_n_shortest_leases failed')
+
+    def test_renew_lease(self):
+        self.client.create(self.key1, self.value1, self.lease1)
+        self.client.renew_lease(self.key1, self.lease2)
+        lease = self.client.get_lease(self.key1)
+        self.assertTrue(lease > self.lease1, 'renew_lease failed: %s !> %s' % (lease, self.lease1))
