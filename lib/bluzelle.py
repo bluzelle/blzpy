@@ -210,10 +210,10 @@ class Client:
         fee_gas = int(fee['gas'])
         gas_info = self.options['gas_info']
         if gas_info['max_gas'] is not 0 and fee_gas > gas_info['max_gas']:
-            fee['gas'] = strconv.Itoa(gas_info['max_gas'])
+            fee['gas'] = str(gas_info['max_gas'])
         if gas_info['max_fee'] is not 0:
             fee['amount'] = [{'denom': TOKEN_NAME, 'amount': str(gas_info['max_fee'])}]
-        elif gasInfo.GasPrice is not 0:
+        elif gasInfo['gas_price'] is not 0:
             fee['amount'] = [{'denom': TOKEN_NAME, 'amount': str(fee_gas * gas_info['gas_price'])}]
         txn['fee'] = fee
 
@@ -308,6 +308,12 @@ class Client:
         logger.disabled = not self.options['debug']
         self.logger = logger
 
+    def set_private_key(self):
+        self.private_key = SigningKey.from_string(
+            mnemonic_to_private_key(self.options['mnemonic'], str_derivation_path=HD_PATH),
+            curve=SECP256k1
+        )
+
     def verify_address(self):
         pk = self.private_key.verifying_key.to_string("compressed")
 
@@ -362,10 +368,7 @@ def new_client(options):
     client = Client(options)
 
     # private key
-    client.private_key = SigningKey.from_string(
-        mnemonic_to_private_key(options['mnemonic'], str_derivation_path=HD_PATH),
-        curve=SECP256k1
-    )
+    client.set_private_key()
 
     # verify address
     client.verify_address()
