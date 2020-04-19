@@ -140,7 +140,10 @@ class Client:
         return self.send_transaction("post", "/crud/deleteall", {})
 
     def multi_update(self, payload):
-        raise Exception('not yet implemented')
+      list = []
+      for key in payload:
+        list.append({"key": key, "value": payload[key]})
+      return self.send_transaction("post", "/crud/multiupdate", {"KeyValues": list})
 
     def renew_lease(self, key, lease):
         self.send_transaction("post", "/crud/renewlease", {

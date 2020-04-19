@@ -130,11 +130,14 @@ class TestMethods(unittest.TestCase):
     def test_multi_update(self):
         self.client.create(self.key1, self.value1)
         self.client.create(self.key2, self.value1)
-        with self.assertRaisesRegex(Exception, "not yet implemented"):
-            data = {}
-            data[self.key1] = self.key1
-            data[self.key2] = self.key2
-            self.client.multi_update(data)
+        #
+        data = {}
+        data[self.key1] = self.key1
+        data[self.key2] = self.key2
+        self.client.multi_update(data)
+        #
+        self.assertEqual(self.client.read(self.key1), self.key1)
+        self.assertEqual(self.client.read(self.key2), self.key2)
 
     def test_read_account(self):
         account = self.client.read_account()
