@@ -118,12 +118,12 @@ class Client:
             "Value": value,
         })
 
-    def update(self, key, value, lease = 0):
-        return self.send_transaction("post", "/crud/update", {
-            "Key": key,
-            "Lease": str(lease),
-            "Value": value,
-        })
+    def update(self, key, value, lease = None):
+        payload = { "Key": key }
+        if type(lease) is int:
+            payload["Lease"] = str(lease)
+        payload["Value"] = value
+        return self.send_transaction("post", "/crud/update", payload)
 
     def delete(self, key):
         return self.send_transaction("delete", "/crud/delete", {
@@ -367,14 +367,14 @@ def new_client(options):
 
     client = Client(options)
 
+    # logging
+    client.setup_logging()
+
     # private key
     client.set_private_key()
 
     # verify address
     client.verify_address()
-
-    # logging
-    client.setup_logging()
 
     # account
     client.set_account()
