@@ -32,85 +32,18 @@ class Client:
     def __init__(self, options):
         self.options = options
 
-    # query methods
+    #
+
     def read_account(self):
         url = "/auth/accounts/%s" % self.options["address"]
         return self.api_query(url)['result']['value']
-
-    def read(self, key):
-        url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return self.api_query(url)['result']['value']
-
-    def proven_read(self, key):
-        url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return self.api_query(url)['result']['value']
-
-    def has(self, key):
-        url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return self.api_query(url)['result']['has']
-
-    def count(self):
-        url = "/crud/count/{uuid}".format(uuid=self.options["uuid"])
-        return int(self.api_query(url)['result']['count'])
-
-    def keys(self):
-        url = "/crud/keys/{uuid}".format(uuid=self.options["uuid"])
-        return self.api_query(url)['result']['keys']
-
-    def key_values(self):
-        url = "/crud/keyvalues/{uuid}".format(uuid=self.options["uuid"])
-        return self.api_query(url)['result']['keyvalues']
 
     def version(self):
         url = "/node_info"
         return self.api_query(url)['application_version']['version']
 
-    def get_lease(self, key):
-        url = "/crud/getlease/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return int(self.api_query(url)['result']['lease'])
-
-    def get_n_shortest_leases(self, n):
-        url = "/crud/getnshortestlease/{uuid}/{n}".format(uuid=self.options["uuid"], n=n)
-        return self.api_query(url)['result']['keyleases']
-
-    #query tx methods
-    def tx_read(self, key):
-        res = self.send_transaction("post", "/crud/read", {
-            "Key": key,
-        })
-        return json.loads(res)['value']
-
-    def tx_has(self, key):
-        res = self.send_transaction("post", "/crud/has", {
-            "Key": key,
-        })
-        return json.loads(res)['has']
-
-    def tx_count(self):
-        res = self.send_transaction("post", "/crud/count", {})
-        return int(json.loads(res)['count'])
-
-    def tx_keys(self):
-        res = self.send_transaction("post", "/crud/keys", {})
-        return json.loads(res)['keys']
-
-    def tx_key_values(self):
-        res = self.send_transaction("post", "/crud/keyvalues", {})
-        return json.loads(res)['keyvalues']
-
-    def tx_get_lease(self, key):
-        res = self.send_transaction("post", "/crud/getlease", {
-            "Key": key,
-        })
-        return int(json.loads(res)['lease'])
-
-    def tx_get_n_shortest_leases(self, n):
-        res = self.send_transaction("post", "/crud/getnshortestlease", {
-            "N": n,
-        })
-        return json.loads(res)['keyleases']
-
     # mutate methods
+
     def create(self, key, value, lease = 0):
         return self.send_transaction("post", "/crud/create", {
             "Key": key,
@@ -151,10 +84,81 @@ class Client:
             "Lease": str(lease),
         })
 
-    def renew_lease_all(self, lease):
+    def renew_all_leases(self, lease):
         self.send_transaction("post", "/crud/renewleaseall", {
             "Lease": str(lease),
         })
+
+    # query methods
+
+    def read(self, key):
+        url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        return self.api_query(url)['result']['value']
+
+    def proven_read(self, key):
+        url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        return self.api_query(url)['result']['value']
+
+    def has(self, key):
+        url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        return self.api_query(url)['result']['has']
+
+    def count(self):
+        url = "/crud/count/{uuid}".format(uuid=self.options["uuid"])
+        return int(self.api_query(url)['result']['count'])
+
+    def keys(self):
+        url = "/crud/keys/{uuid}".format(uuid=self.options["uuid"])
+        return self.api_query(url)['result']['keys']
+
+    def key_values(self):
+        url = "/crud/keyvalues/{uuid}".format(uuid=self.options["uuid"])
+        return self.api_query(url)['result']['keyvalues']
+
+    def get_lease(self, key):
+        url = "/crud/getlease/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        return int(self.api_query(url)['result']['lease'])
+
+    def get_n_shortest_leases(self, n):
+        url = "/crud/getnshortestlease/{uuid}/{n}".format(uuid=self.options["uuid"], n=str(n))
+        return self.api_query(url)['result']['keyleases']
+
+    #query tx methods
+    def tx_read(self, key):
+          res = self.send_transaction("post", "/crud/read", {
+              "Key": key,
+          })
+          return res['value']
+
+    def tx_has(self, key):
+        res = self.send_transaction("post", "/crud/has", {
+            "Key": key,
+        })
+        return res['has']
+
+    def tx_count(self):
+        res = self.send_transaction("post", "/crud/count", {})
+        return int(res['count'])
+
+    def tx_keys(self):
+        res = self.send_transaction("post", "/crud/keys", {})
+        return res['keys']
+
+    def tx_key_values(self):
+        res = self.send_transaction("post", "/crud/keyvalues", {})
+        return res['keyvalues']
+
+    def tx_get_lease(self, key):
+        res = self.send_transaction("post", "/crud/getlease", {
+            "Key": key,
+        })
+        return int(res['lease'])
+
+    def tx_get_n_shortest_leases(self, n):
+        res = self.send_transaction("post", "/crud/getnshortestlease", {
+            "N": str(n),
+        })
+        return res['keyleases']
 
     # api
     def api_query(self, endpoint):
@@ -249,11 +253,10 @@ class Client:
         #  "raw_log":"unauthorized: signature verification failed; verify correct account sequence and chain-id"}
         #
         # this is far from ideal, doesn't match their docs, and is probably going to change (again) in the future.
-
         if not ('code' in response):
             self.account['sequence'] += 1
             if 'data' in response:
-                return bytes.fromhex(response['data']).decode("ascii")
+                return json.loads(bytes.fromhex(response['data']).decode("ascii"))
             return
 
         raw_log = response['raw_log']

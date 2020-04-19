@@ -52,7 +52,7 @@ Install requirements:
 Then run the tests:
 
 ```
-    python -m unittest test.test
+    make test
 ```
 
 ### Licence

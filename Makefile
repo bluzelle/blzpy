@@ -1,14 +1,21 @@
 o=$(o)
 
-testall:
-	@python -m unittest test.test
+test:
+	@$(MAKE) test-options-all
+	@$(MAKE) test-methods-all
+
+test-methods-all:
+	@python -m unittest test.methods.TestMethods
+
+test-options-all:
+	@python -m unittest test.options.TestOptions
 
 # e.g. make test o=rename
-test:
-	@python -m unittest test.test.TestMethods.test_$o
+test-methods:
+	@python -m unittest test.methods.TestMethods.test_$o
 
 test-options:
-	@python -m unittest test.test.TestOptions.test_$o
+	@python -m unittest test.options.TestOptions.test_$o
 
 example:
 	@python examples/crud.py
@@ -16,4 +23,10 @@ example:
 shell:
 	@python3 -m pipenv shell
 
-.PHONY: shell example test-options test testall
+.PHONY: test \
+	test-methods-all \
+	test-options-all \
+	test-methods \
+	test-options \
+	example \
+	shell
