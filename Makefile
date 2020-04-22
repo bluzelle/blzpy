@@ -23,10 +23,15 @@ example:
 shell:
 	@python3 -m pipenv shell
 
+deploy:
+	@python setup.py sdist bdist_wheel
+	@twine upload dist/*
+
 .PHONY: test \
 	test-methods-all \
 	test-options-all \
 	test-methods \
 	test-options \
 	example \
-	shell
+	shell \
+	deploy

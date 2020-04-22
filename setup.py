@@ -1,4 +1,3 @@
-import os
 from setuptools import setup
 
 # from pipenv.project import Project
@@ -7,21 +6,23 @@ from setuptools import setup
 # requirements = convert_deps_to_pip(pfile['packages'], r=False)
 # test_requirements = convert_deps_to_pip(pfile['dev-packages'], r=False)
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+with open("Readme.md", "r") as fh:
+    long_description = fh.read()
 
 setup(
-    name = "bluzelle",
-    version = "0.1.0",
-    author = "vbstreetz",
-    author_email = "vbstreetz@gmail.com",
-    description = ("Python library for the Bluzelle Service."),
-    keywords = "bluzelle tendermint cosmos",
-    url = "https://github.com/vbstreetz/blzpy",
+    name="bluzelle",
+    version="0.1.0",
+    author="vbstreetz",
+    author_email="vbstreetz@gmail.com",
+    description=("Python library for the Bluzelle Service."),
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    keywords="bluzelle tendermint cosmos",
+    url="https://github.com/vbstreetz/blzpy",
     install_requires=['requests', 'base58', 'ecdsa', 'bech32'],
     packages=['bluzelle'],
-    package_dir = {'bluzelle': 'lib'},
-    long_description=read('Readme.md'),
+    package_dir={'bluzelle': 'lib'},
     classifiers=[
         "Topic :: Utilities",
     ],
