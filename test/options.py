@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import time
-from .util import new_client, bluzelle, mnemonic
+from .util import new_client, bluzelle, mnemonic, Client
 
 class TestOptions(unittest.TestCase):
     def test_requires_address(self):
@@ -47,3 +47,32 @@ class TestOptions(unittest.TestCase):
                 "address": "1",
                 "mnemonic": mnemonic
             })
+
+
+class TestLease(unittest.TestCase):
+  def test_converts_blocks_to_seconds(self):
+    self.assertEqual(Client.lease_blocks_to_seconds(1), 5)
+    self.assertEqual(Client.lease_blocks_to_seconds(2), 10)
+    self.assertEqual(Client.lease_blocks_to_seconds(3), 15)
+
+  def test_converts_lease_info_to_blocks(self):
+    self.assertEqual(Client.lease_info_to_blocks({
+    }), 0)
+    self.assertEqual(Client.lease_info_to_blocks({
+      "seconds": 5
+    }), 1)
+    self.assertEqual(Client.lease_info_to_blocks({
+      "seconds": 5,
+      "minutes": 1,
+    }), 13)
+    self.assertEqual(Client.lease_info_to_blocks({
+      "seconds": 5,
+      "minutes": 1,
+      "hours": 1,
+    }), 733)
+    self.assertEqual(Client.lease_info_to_blocks({
+      "seconds": 5,
+      "minutes": 1,
+      "hours": 1,
+      "days": 1,
+    }), 18013)

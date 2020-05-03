@@ -2,6 +2,7 @@
 
 import os
 import lib as bluzelle
+from lib.bluzelle import Client
 import distutils.util
 from dotenv import load_dotenv
 

@@ -16,8 +16,8 @@ class TestMethods(unittest.TestCase):
         self.value1 = 'foo'
         self.value2 = 'bar'
         self.value3 = 'baz'
-        self.lease1 = 10
-        self.lease2 = 20
+        self.lease1 = {"seconds": 10}
+        self.lease2 = {"seconds": 20}
 
     #
 
@@ -33,6 +33,11 @@ class TestMethods(unittest.TestCase):
 
     def test_create(self):
         self.client.create(self.key1, self.value1)
+
+    def test_create_with_lease(self):
+        self.client.create(self.key1, self.value1, {
+            "seconds": 60
+        })
 
     def test_update(self):
         self.client.create(self.key1, self.value1)
@@ -80,13 +85,13 @@ class TestMethods(unittest.TestCase):
         self.client.create(self.key1, self.value1, self.lease1)
         self.client.renew_lease(self.key1, self.lease2)
         lease = self.client.get_lease(self.key1)
-        self.assertTrue(lease > self.lease1, 'renew_lease failed: %s !> %s' % (lease, self.lease1))
+        self.assertTrue(lease > self.lease1["seconds"], 'renew_lease failed: %s !> %s' % (lease, self.lease1["seconds"]))
 
     def test_renew_all_leases(self):
         self.client.create(self.key1, self.value1, self.lease1)
         self.client.renew_all_leases(self.lease2)
         lease = self.client.get_lease(self.key1)
-        self.assertTrue(lease > self.lease1, 'renew_all_leases failed: %s !> %s' % (lease, self.lease1))
+        self.assertTrue(lease > self.lease1["seconds"], 'renew_all_leases failed: %s !> %s' % (lease, self.lease1["seconds"]))
 
     #
 
@@ -123,7 +128,7 @@ class TestMethods(unittest.TestCase):
     def test_get_lease(self):
         self.client.create(self.key1, self.value1, self.lease1)
         lease = self.client.get_lease(self.key1)
-        self.assertTrue(lease <= self.lease1, 'get_lease failed: %s !< %s' % (lease, self.lease1))
+        self.assertTrue(lease <= self.lease1["seconds"], 'get_lease failed: %s !< %s' % (lease, self.lease1["seconds"]))
 
     def test_get_n_shortest_leases(self):
         self.client.create(self.key1, self.value1, self.lease1)
@@ -167,7 +172,7 @@ class TestMethods(unittest.TestCase):
     def test_tx_get_lease(self):
         self.client.create(self.key1, self.value1, self.lease1)
         lease = self.client.tx_get_lease(self.key1)
-        self.assertTrue(lease <= self.lease1, 'tx_get_lease failed: %s !< %s' % (lease, self.lease1))
+        self.assertTrue(lease <= self.lease1["seconds"], 'tx_get_lease failed: %s !< %s' % (lease, self.lease1["seconds"]))
 
     def test_tx_get_n_shortest_leases(self):
         self.client.create(self.key1, self.value1, self.lease1)

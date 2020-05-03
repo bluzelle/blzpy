@@ -7,6 +7,7 @@ import logging
 import time
 import hashlib
 import bech32
+import math
 from .mnemonic_utils import mnemonic_to_private_key
 from ecdsa import SigningKey, SECP256k1
 
@@ -19,6 +20,7 @@ TOKEN_NAME = "ubnt"
 PUB_KEY_TYPE = "tendermint/PubKeySecp256k1"
 BROADCAST_MAX_RETRIES = 10
 BROADCAST_RETRY_INTERVAL_SECONDS = 1
+BLOCK_TIME_IN_SECONDS = 5
 
 # client option validation error
 class OptionsError(Exception):
@@ -44,17 +46,17 @@ class Client:
 
     # mutate methods
 
-    def create(self, key, value, lease = 0):
-        return self.send_transaction("post", "/crud/create", {
-            "Key": key,
-            "Lease": str(lease),
-            "Value": value,
-        })
+    def create(self, key, value, lease_info = None):
+        payload = { "Key": key }
+        if lease_info != None:
+            payload["Lease"] = str(Client.lease_info_to_blocks(lease_info))
+        payload["Value"] = value
+        return self.send_transaction("post", "/crud/create", payload)
 
     def update(self, key, value, lease = None):
         payload = { "Key": key }
-        if type(lease) is int:
-            payload["Lease"] = str(lease)
+        if lease_info != None:
+            payload["Lease"] = str(Client.lease_info_to_blocks(lease_info))
         payload["Value"] = value
         return self.send_transaction("post", "/crud/update", payload)
 
@@ -78,15 +80,15 @@ class Client:
         list.append({"key": key, "value": payload[key]})
       return self.send_transaction("post", "/crud/multiupdate", {"KeyValues": list})
 
-    def renew_lease(self, key, lease):
+    def renew_lease(self, key, lease_info):
         self.send_transaction("post", "/crud/renewlease", {
             "Key": key,
-            "Lease": str(lease),
+            "Lease": str(Client.lease_info_to_blocks(lease_info)),
         })
 
-    def renew_all_leases(self, lease):
+    def renew_all_leases(self, lease_info):
         self.send_transaction("post", "/crud/renewleaseall", {
-            "Lease": str(lease),
+            "Lease": str(Client.lease_info_to_blocks(lease_info)),
         })
 
     # query methods
@@ -117,11 +119,14 @@ class Client:
 
     def get_lease(self, key):
         url = "/crud/getlease/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return int(self.api_query(url)['result']['lease'])
+        return Client.lease_blocks_to_seconds(int(self.api_query(url)['result']['lease']))
 
     def get_n_shortest_leases(self, n):
-        url = "/crud/getnshortestlease/{uuid}/{n}".format(uuid=self.options["uuid"], n=str(n))
-        return self.api_query(url)['result']['keyleases']
+        url = "/crud/getnshortestleases/{uuid}/{n}".format(uuid=self.options["uuid"], n=str(n))
+        kls = self.api_query(url)['result']['keyleases']
+        for kl in kls:
+            kl["lease"] = Client.lease_blocks_to_seconds(kl["lease"])
+        return kls
 
     #query tx methods
     def tx_read(self, key):
@@ -152,13 +157,16 @@ class Client:
         res = self.send_transaction("post", "/crud/getlease", {
             "Key": key,
         })
-        return int(res['lease'])
+        return Client.lease_blocks_to_seconds(int(res['lease']))
 
     def tx_get_n_shortest_leases(self, n):
-        res = self.send_transaction("post", "/crud/getnshortestlease", {
+        res = self.send_transaction("post", "/crud/getnshortestleases", {
             "N": str(n),
         })
-        return res['keyleases']
+        kls = res['keyleases']
+        for kl in kls:
+            kl["lease"] = Client.lease_blocks_to_seconds(kl["lease"])
+        return kls
 
     # api
     def api_query(self, endpoint):
@@ -225,6 +233,7 @@ class Client:
         txn['fee'] = fee
 
         # sign
+        self.logger.warning( self.get_pub_key_string())
         txn['signatures'] = [{
             "pub_key": {
                 "type": PUB_KEY_TYPE,
@@ -335,6 +344,40 @@ class Client:
         if address != self.options['address']:
             raise OptionsError('bad credentials(verify your address and mnemonic)')
 
+    @classmethod
+    def lease_info_to_blocks(cls, lease_info):
+        if lease_info == None:
+          raise OptionsError('provided lease info is nil')
+
+        if type(lease_info) is not dict:
+          raise OptionsError('lease_info should be a dict of {days, hours, minutes, seconds}')
+
+        days = lease_info.get('days', 0)
+        hours = lease_info.get('hours', 0)
+        minutes = lease_info.get('minutes', 0)
+        seconds = lease_info.get('seconds', 0)
+
+        if seconds and type(seconds) is not int:
+            raise OptionsError('lease_info[seconds] should be an int')
+
+        if minutes and type(minutes) is not int:
+            raise OptionsError('lease_info[minutes] should be an int')
+
+        if hours and type(hours) is not int:
+            raise OptionsError('lease_info[hours] should be an int')
+
+        if days and type(days) is not int:
+            raise OptionsError('lease_info[days] should be an int')
+
+
+        seconds += days * 24 * 60 * 60
+        seconds += hours * 60 * 60
+        seconds += minutes * 60
+        return math.floor(seconds / BLOCK_TIME_IN_SECONDS)
+
+    @classmethod
+    def lease_blocks_to_seconds(cls, blocks):
+        return blocks * BLOCK_TIME_IN_SECONDS
 
 # initialize new client with provided `options`
 # @param options
