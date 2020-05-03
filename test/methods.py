@@ -39,6 +39,15 @@ class TestMethods(unittest.TestCase):
             "seconds": 60
         })
 
+    def test_create_with_gas_info(self):
+        self.client.create(self.key1, self.value1, gas_info = {
+          "max_fee": 1000000000
+        })
+        with self.assertRaisesRegex(bluzelle.APIError, "insufficient fee: insufficient fees; got: 1ubnt required: 2000000ubnt"):
+            self.client.create(self.key2, self.value1, gas_info = {
+              "max_fee": 1
+            })
+
     def test_update(self):
         self.client.create(self.key1, self.value1)
         self.client.update(self.key1, self.value2)

@@ -46,50 +46,50 @@ class Client:
 
     # mutate methods
 
-    def create(self, key, value, lease_info = None):
+    def create(self, key, value, lease_info = None, gas_info = None):
         payload = { "Key": key }
         if lease_info != None:
             payload["Lease"] = str(Client.lease_info_to_blocks(lease_info))
         payload["Value"] = value
-        return self.send_transaction("post", "/crud/create", payload)
+        return self.send_transaction("post", "/crud/create", payload, gas_info = gas_info)
 
-    def update(self, key, value, lease = None):
+    def update(self, key, value, lease_info = None, gas_info = None):
         payload = { "Key": key }
         if lease_info != None:
             payload["Lease"] = str(Client.lease_info_to_blocks(lease_info))
         payload["Value"] = value
-        return self.send_transaction("post", "/crud/update", payload)
+        return self.send_transaction("post", "/crud/update", payload, gas_info = gas_info)
 
-    def delete(self, key):
+    def delete(self, key, gas_info = None):
         return self.send_transaction("delete", "/crud/delete", {
             "Key": key,
-        })
+        }, gas_info = gas_info)
 
-    def rename(self, key, new_key):
+    def rename(self, key, new_key, gas_info = None):
         return self.send_transaction("post", "/crud/rename", {
             "Key": key,
             "NewKey": new_key,
-        })
+        }, gas_info = gas_info)
 
-    def delete_all(self):
-        return self.send_transaction("post", "/crud/deleteall", {})
+    def delete_all(self, gas_info = None):
+        return self.send_transaction("post", "/crud/deleteall", {}, gas_info = gas_info)
 
-    def multi_update(self, payload):
+    def multi_update(self, payload, gas_info = None):
       list = []
       for key in payload:
         list.append({"key": key, "value": payload[key]})
-      return self.send_transaction("post", "/crud/multiupdate", {"KeyValues": list})
+      return self.send_transaction("post", "/crud/multiupdate", {"KeyValues": list}, gas_info = gas_info)
 
-    def renew_lease(self, key, lease_info):
+    def renew_lease(self, key, lease_info, gas_info = None):
         self.send_transaction("post", "/crud/renewlease", {
             "Key": key,
             "Lease": str(Client.lease_info_to_blocks(lease_info)),
-        })
+        }, gas_info = gas_info)
 
-    def renew_all_leases(self, lease_info):
+    def renew_all_leases(self, lease_info, gas_info = None):
         self.send_transaction("post", "/crud/renewleaseall", {
             "Lease": str(Client.lease_info_to_blocks(lease_info)),
-        })
+        }, gas_info = gas_info)
 
     # query methods
 
@@ -129,40 +129,40 @@ class Client:
         return kls
 
     #query tx methods
-    def tx_read(self, key):
+    def tx_read(self, key, gas_info = None):
           res = self.send_transaction("post", "/crud/read", {
               "Key": key,
-          })
+          }, gas_info = gas_info)
           return res['value']
 
-    def tx_has(self, key):
+    def tx_has(self, key, gas_info = None):
         res = self.send_transaction("post", "/crud/has", {
             "Key": key,
-        })
+        }, gas_info = gas_info)
         return res['has']
 
-    def tx_count(self):
-        res = self.send_transaction("post", "/crud/count", {})
+    def tx_count(self, gas_info = None):
+        res = self.send_transaction("post", "/crud/count", {}, gas_info = gas_info)
         return int(res['count'])
 
-    def tx_keys(self):
-        res = self.send_transaction("post", "/crud/keys", {})
+    def tx_keys(self, gas_info = None):
+        res = self.send_transaction("post", "/crud/keys", {}, gas_info = gas_info)
         return res['keys']
 
-    def tx_key_values(self):
-        res = self.send_transaction("post", "/crud/keyvalues", {})
+    def tx_key_values(self, gas_info = None):
+        res = self.send_transaction("post", "/crud/keyvalues", {}, gas_info = gas_info)
         return res['keyvalues']
 
-    def tx_get_lease(self, key):
+    def tx_get_lease(self, key, gas_info = None):
         res = self.send_transaction("post", "/crud/getlease", {
             "Key": key,
-        })
+        }, gas_info = gas_info)
         return Client.lease_blocks_to_seconds(int(res['lease']))
 
-    def tx_get_n_shortest_leases(self, n):
+    def tx_get_n_shortest_leases(self, n, gas_info = None):
         res = self.send_transaction("post", "/crud/getnshortestleases", {
             "N": str(n),
-        })
+        }, gas_info = gas_info)
         kls = res['keyleases']
         for kl in kls:
             kl["lease"] = Client.lease_blocks_to_seconds(kl["lease"])
@@ -199,10 +199,10 @@ class Client:
         self.logger.debug('response (%s)...' % (data))
         return data
 
-    def send_transaction(self, method, endpoint, payload):
+    def send_transaction(self, method, endpoint, payload, gas_info = None):
         self.broadcast_retries = 0
         txn = self.validate_transaction(method, endpoint, payload)
-        return self.broadcast_transaction(txn)
+        return self.broadcast_transaction(txn, gas_info = gas_info)
 
     def validate_transaction(self, method, endpoint, payload):
         address = self.options['address']
@@ -216,14 +216,18 @@ class Client:
         })
         return self.api_mutate(method, endpoint, payload)['value']
 
-    def broadcast_transaction(self, txn):
+    def broadcast_transaction(self, txn, gas_info = None):
         # set txn memo
         txn['memo'] = Client.make_random_string(32)
 
         # set txn gas
         fee = txn['fee']
         fee_gas = int(fee['gas'])
-        gas_info = self.options['gas_info']
+        if gas_info == None:
+            gas_info = self.options['gas_info']
+        if gas_info == None:
+            raise OptionsError('please provide gas_info when initializing the client or in the transaction')
+        Client.validate_gas_info(gas_info)
         if gas_info['max_gas'] is not 0 and fee_gas > gas_info['max_gas']:
             fee['gas'] = str(gas_info['max_gas'])
         if gas_info['max_fee'] is not 0:
@@ -277,7 +281,7 @@ class Client:
             time.sleep(BROADCAST_RETRY_INTERVAL_SECONDS)
             # lookup changed sequence
             self.set_account()
-            return self.broadcast_transaction(txn)
+            return self.broadcast_transaction(txn, gas_info = gas_info)
 
         raise APIError(raw_log)
 
@@ -379,6 +383,18 @@ class Client:
     def lease_blocks_to_seconds(cls, blocks):
         return blocks * BLOCK_TIME_IN_SECONDS
 
+    @classmethod
+    def validate_gas_info(cls, gas_info):
+        if type(gas_info) is not dict:
+            raise OptionsError('gas_info should be a dict of {gas_price, max_fee, max_gas}')
+        gas_info_keys = ["gas_price", "max_fee", "max_gas"]
+        for k in gas_info_keys:
+            v = gas_info.get(k, 0)
+            if type(v) is not int:
+                raise OptionsError('gas_info[%s] should be an int' % k)
+            gas_info[k] = v
+        return gas_info
+
 # initialize new client with provided `options`
 # @param options
 #   @required address
@@ -395,15 +411,7 @@ def new_client(options):
     if not ('mnemonic' in options):
         raise OptionsError('mnemonic is required')
 
-    gas_info = options.get('gas_info', {})
-    if type(gas_info) is not dict:
-        raise OptionsError('gas_info should be a dict of {gas_price, max_fee, max_gas}')
-    gas_info_keys = ["gas_price", "max_fee", "max_gas"]
-    for k in gas_info_keys:
-        v = gas_info.get(k, 0)
-        if type(v) is not int:
-            raise OptionsError('gas_info[%s] should be an int' % k)
-        gas_info[k] = v
+    Client.validate_gas_info(options.get('gas_info', {}))
 
     if not ('debug' in options):
         options['debug'] = False
