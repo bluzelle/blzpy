@@ -12,7 +12,7 @@ with open("Readme.md", "r") as fh:
 
 setup(
     name="bluzelle",
-    version="0.1.0",
+    version="0.1.1",
     author="vbstreetz",
     author_email="vbstreetz@gmail.com",
     description=("Python library for the Bluzelle Service."),

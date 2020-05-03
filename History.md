@@ -1,4 +1,11 @@
 
+
+0.1.1 / 2020-05-03
+==================
+
+  * feat: allow passing gas_info param in tx methods
+  * feat: pass lease param humanized
+
 0.1.0 / 2020-04-25
 ==================
 
@@ -40,3 +47,4 @@
   * feat: setuptools requires
   * fix: docs
   * feat: setup
+
