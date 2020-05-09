@@ -21,11 +21,14 @@ example:
 	@python examples/crud.py
 
 shell:
-	@/usr/bin/python3 -m pipenv shell
+	@~/homebrew/bin/python3 -m pipenv shell
 
 deploy:
 	@python setup.py sdist bdist_wheel
 	@twine upload dist/*
+
+uat:
+	@FLASK_APP="uat:app" FLASK_ENV=development flask run --port=4561
 
 .PHONY: test \
 	test-methods-all \
@@ -34,4 +37,5 @@ deploy:
 	test-options \
 	example \
 	shell \
-	deploy
+	deploy \
+	uat
