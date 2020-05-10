@@ -28,7 +28,9 @@ class OptionsError(Exception):
 
 # general api error
 class APIError(Exception):
-    pass
+    def __init__(self, msg, body):
+        self.message = msg
+        self.apiError = body
 
 class Client:
     def __init__(self, options):
@@ -289,13 +291,13 @@ class Client:
             self.broadcast_retries += 1
             self.logger.warning("transaction failed ... retrying(%i) ...", self.broadcast_retries)
             if self.broadcast_retries >= BROADCAST_MAX_RETRIES:
-                raise APIError("transaction failed after max retry attempts")
+                raise APIError("transaction failed after max retry attempts", response)
             time.sleep(BROADCAST_RETRY_INTERVAL_SECONDS)
             # lookup changed sequence
             self.set_account()
             return self.broadcast_transaction(txn, gas_info = gas_info)
 
-        raise APIError(raw_log)
+        raise APIError(raw_log, response)
 
     def sign_transaction(self, txn):
         payload = {
@@ -315,9 +317,10 @@ class Client:
         self.account = self.read_account()
 
     def get_response_error(self, response):
-        error = response.json().get('error', '')
+        jsonError = response.json()
+        error = jsonError.get('error', '')
         if error:
-            return APIError(error)
+            return APIError(error, jsonError)
 
     def get_pub_key_string(self):
         return base64.b64encode(self.private_key.verifying_key.to_string("compressed")).decode("utf-8")
