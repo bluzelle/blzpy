@@ -28,9 +28,9 @@ class OptionsError(Exception):
 
 # general api error
 class APIError(Exception):
-    def __init__(self, msg, body):
+    def __init__(self, msg, apiError):
         self.message = msg
-        self.apiError = body
+        self.apiError = apiError
 
 class Client:
     def __init__(self, options):
@@ -38,7 +38,7 @@ class Client:
 
     #
 
-    def read_account(self):
+    def account(self):
         url = "/auth/accounts/%s" % self.options["address"]
         return self.api_query(url)['result']['value']
 
@@ -258,8 +258,8 @@ class Client:
                 "value": self.get_pub_key_string()
             },
             "signature": self.sign_transaction(txn),
-            "account_number": str(self.account['account_number']),
-            "sequence": str(self.account['sequence'])
+            "account_number": str(self.bluzelle_account['account_number']),
+            "sequence": str(self.bluzelle_account['sequence'])
         }]
 
         # broadcast
@@ -281,7 +281,7 @@ class Client:
         #
         # this is far from ideal, doesn't match their docs, and is probably going to change (again) in the future.
         if not ('code' in response):
-            self.account['sequence'] += 1
+            self.bluzelle_account['sequence'] += 1
             if 'data' in response:
                 return json.loads(bytes.fromhex(response['data']).decode("ascii"))
             return
@@ -301,12 +301,12 @@ class Client:
 
     def sign_transaction(self, txn):
         payload = {
-            "account_number": str(self.account['account_number']),
+            "account_number": str(self.bluzelle_account['account_number']),
             "chain_id": self.options['chain_id'],
             "fee": txn["fee"],
             "memo": txn["memo"],
             "msgs": txn["msg"],
-            "sequence": str(self.account['sequence']),
+            "sequence": str(self.bluzelle_account['sequence']),
         }
         payload = self.json_dumps(payload)
         self.logger.debug("sign %s" % payload)
@@ -314,7 +314,7 @@ class Client:
         return base64.b64encode(self.private_key.sign_deterministic(payload, hashfunc=hashlib.sha256)).decode("utf-8")
 
     def set_account(self):
-        self.account = self.read_account()
+        self.bluzelle_account = self.account()
 
     def get_response_error(self, response):
         jsonError = response.json()

@@ -21,8 +21,8 @@ class TestMethods(unittest.TestCase):
 
     #
 
-    def test_read_account(self):
-        account = self.client.read_account()
+    def test_account(self):
+        account = self.client.account()
         self.assertTrue(bool(account['address']), 'address not defined %s' % (account['address']))
 
     def test_version(self):
