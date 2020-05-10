@@ -50,5 +50,5 @@ def uat():
 
     result = client_method(*args)
     if result == None:
-        result = ''
+        result = None
     return jsonify(result)
