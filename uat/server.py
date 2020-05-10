@@ -7,12 +7,9 @@ from lib.bluzelle import new_client
 
 load_dotenv()
 
-address = os.getenv('ADDRESS', '')
-mnemonic = os.getenv('MNEMONIC', '')
-
 client = new_client({
-    'address':  address,
-    'mnemonic': mnemonic,
+    'address':  os.getenv('ADDRESS', ''),
+    'mnemonic': os.getenv('MNEMONIC', ''),
     'uuid':     os.getenv('UUID', ''),
     'endpoint': os.getenv('ENDPOINT', ''),
     'chain_id':  os.getenv('CHAIN_ID', ''),
@@ -25,7 +22,7 @@ client = new_client({
 app = Flask(__name__)
 
 def error(msg):
-    return abort(400)
+    return abort(400, msg)
 
 @app.errorhandler(Exception)
 def handle_error(e):

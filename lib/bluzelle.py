@@ -93,12 +93,11 @@ class Client:
 
     # query methods
 
-    def read(self, key):
-        url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return self.api_query(url)['result']['value']
-
-    def proven_read(self, key):
-        url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+    def read(self, key, proof = None):
+        if proof:
+            url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        else:
+            url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         return self.api_query(url)['result']['value']
 
     def has(self, key):
@@ -221,20 +220,33 @@ class Client:
         txn['memo'] = Client.make_random_string(32)
 
         # set txn gas
-        fee = txn['fee']
-        fee_gas = int(fee['gas'])
         if gas_info == None:
             gas_info = self.options['gas_info']
         if gas_info == None:
             raise OptionsError('please provide gas_info when initializing the client or in the transaction')
         Client.validate_gas_info(gas_info)
-        if gas_info['max_gas'] is not 0 and fee_gas > gas_info['max_gas']:
-            fee['gas'] = str(gas_info['max_gas'])
-        if gas_info['max_fee'] is not 0:
-            fee['amount'] = [{'denom': TOKEN_NAME, 'amount': str(gas_info['max_fee'])}]
-        elif gasInfo['gas_price'] is not 0:
-            fee['amount'] = [{'denom': TOKEN_NAME, 'amount': str(fee_gas * gas_info['gas_price'])}]
-        txn['fee'] = fee
+
+        fee = txn['fee']
+        gas = int(fee['gas'])
+        amount = 0
+        if len(fee.get('amount', [])) > 0:
+            amount = int(fee['amount'][0]['amount'])
+
+        max_gas = gas_info.get('max_gas', None)
+        max_fee = gas_info.get('max_fee', None)
+        gas_price = gas_info.get('gas_price', None)
+
+        if max_gas != 0 and gas > max_gas:
+            gas = max_gas
+        if max_fee != 0:
+            amount = max_fee
+        elif gas_price != 0:
+            amount = fee_gas * gas_price
+
+        txn['fee'] = {
+            'gas': str(gas),
+            'amount': [{ 'denom': TOKEN_NAME, 'amount': str(amount)}]
+        }
 
         # sign
         self.logger.warning( self.get_pub_key_string())
