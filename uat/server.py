@@ -28,7 +28,7 @@ def handle_error(e):
     if isinstance(e, HTTPException):
         code = e.code
     elif isinstance(e, APIError):
-        msg = e.apiError
+        msg = e.api_error
         code = 400
     return jsonify(msg), code
 

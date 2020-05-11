@@ -22,21 +22,29 @@ BROADCAST_MAX_RETRIES = 10
 BROADCAST_RETRY_INTERVAL_SECONDS = 1
 BLOCK_TIME_IN_SECONDS = 5
 
+KEY_DOES_NOT_EXIST = "Key does not exist"
+KEY_MUST_BE_A_STRING = "Key must be a string"
+NEW_KEY_MUST_BE_A_STRING = "New key must be a string"
+VALUE_MUST_BE_A_STRING = "Value must be a string"
+ALL_KEYS_MUST_BE_STRINGS = "All keys must be strings"
+ALL_VALUES_MUST_BE_STRINGS = "All values must be strings"
+INVALID_LEASE_TIME = "Invalid lease time"
+INVALID_VALUE_SPECIFIED = "Invalid value specified"
+ADDRESS_MUST_BE_A_STRING = "address must be a string"
+MNEMONIC_MUST_BE_A_STRING = "mnemonic must be a string"
+UUID_MUST_BE_A_STRING = "uuid must be a string"
+INVALID_TRANSACTION = "Invalid transaction."
+
 # client option validation error
 class OptionsError(Exception):
     pass
 
 # general api error
 class APIError(Exception):
-    def __init__(self, msg, apiError):
+    def __init__(self, msg, api_error, api_response = None):
         self.message = msg
-        self.apiError = apiError or msg
-
-# api http error
-class APIHTTPError(Exception):
-    def __init__(self, response):
-        self.message = str(response.status_code)
-        self.response = response
+        self.api_error = api_error or msg
+        self.api_response = api_response
 
 class Client:
     def __init__(self, options):
@@ -57,14 +65,20 @@ class Client:
     def create(self, key, value, gas_info, lease_info = None, ):
         payload = { "Key": key }
         if lease_info != None:
-            payload["Lease"] = str(Client.lease_info_to_blocks(lease_info))
+            lease = Client.lease_info_to_blocks(lease_info)
+            if lease < 0:
+                raise APIError("", INVALID_LEASE_TIME)
+            payload["Lease"] = str(lease)
         payload["Value"] = value
         return self.send_transaction("post", "/crud/create", payload, gas_info)
 
     def update(self, key, value, gas_info, lease_info = None):
         payload = { "Key": key }
         if lease_info != None:
-            payload["Lease"] = str(Client.lease_info_to_blocks(lease_info))
+            lease = Client.lease_info_to_blocks(lease_info)
+            if lease < 0:
+                raise APIError("", INVALID_LEASE_TIME)
+            payload["Lease"] = str(lease)
         payload["Value"] = value
         return self.send_transaction("post", "/crud/update", payload, gas_info)
 
@@ -86,15 +100,25 @@ class Client:
       return self.send_transaction("post", "/crud/multiupdate", {"KeyValues": payload}, gas_info)
 
     def renew_lease(self, key, gas_info, lease_info):
-        self.send_transaction("post", "/crud/renewlease", {
+        payload = {
             "Key": key,
-            "Lease": str(Client.lease_info_to_blocks(lease_info)),
-        }, gas_info)
+        }
+        lease = Client.lease_info_to_blocks(lease_info)
+        if lease < 0:
+            raise APIError("", INVALID_LEASE_TIME)
+        payload["Lease"] = str(lease)
+        self.send_transaction("post", "/crud/renewlease", payload, gas_info)
 
-    def renew_all_leases(self, gas_info, lease_info):
-        self.send_transaction("post", "/crud/renewleaseall", {
-            "Lease": str(Client.lease_info_to_blocks(lease_info)),
-        }, gas_info)
+    def renew_all_leases(self, *args):
+        return self.renew_lease_all(*args)
+
+    def renew_lease_all(self, gas_info, lease_info):
+        payload = {}
+        lease = Client.lease_info_to_blocks(lease_info)
+        if lease < 0:
+            raise APIError("", INVALID_LEASE_TIME)
+        payload["Lease"] = str(lease)
+        self.send_transaction("post", "/crud/renewleaseall", payload, gas_info)
 
     # query methods
 
@@ -105,12 +129,10 @@ class Client:
             url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         try:
             return self.api_query(url)['result']['value']
-        except APIHTTPError as e:
-            if e.response.status_code == 404:
-                raise APIError("unknown request: key not found", {
-                    "error": "unknown request: key not found"
-                })
-        raise APIError("unknown error")
+        except APIError as e:
+            if e.api_response.status_code == 404:
+                raise APIError(KEY_DOES_NOT_EXIST, KEY_DOES_NOT_EXIST)
+            raise e
 
     def has(self, key):
         url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
@@ -136,7 +158,7 @@ class Client:
         url = "/crud/getnshortestleases/{uuid}/{n}".format(uuid=self.options["uuid"], n=str(n))
         kls = self.api_query(url)['result']['keyleases']
         for kl in kls:
-            kl["lease"] = Client.lease_blocks_to_seconds(kl["lease"])
+            kl["lease"] = Client.lease_blocks_to_seconds(int(kl["lease"]))
         return kls
 
     #query tx methods
@@ -176,7 +198,7 @@ class Client:
         }, gas_info)
         kls = res['keyleases']
         for kl in kls:
-            kl["lease"] = Client.lease_blocks_to_seconds(kl["lease"])
+            kl["lease"] = Client.lease_blocks_to_seconds(int(kl["lease"]))
         return kls
 
     # api
@@ -184,8 +206,6 @@ class Client:
         url = self.options['endpoint'] + endpoint
         self.logger.debug('querying url(%s)...' % (url))
         response = requests.get(url)
-        if response.status_code == 404:
-            raise APIHTTPError(response)
         error = self.get_response_error(response)
         if error:
             raise error
@@ -330,7 +350,7 @@ class Client:
         jsonError = response.json()
         error = jsonError.get('error', '')
         if error:
-            return APIError(error, jsonError)
+            return APIError(error, jsonError, response)
 
     def get_pub_key_string(self):
         return base64.b64encode(self.private_key.verifying_key.to_string("compressed")).decode("utf-8")
