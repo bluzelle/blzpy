@@ -243,7 +243,7 @@ class Client:
         if max_fee != 0:
             amount = max_fee
         elif gas_price != 0:
-            amount = fee_gas * gas_price
+            amount = gas * gas_price
 
         txn['fee'] = {
             'gas': str(gas),
