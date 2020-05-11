@@ -25,9 +25,6 @@ def new_client():
         'uuid':     os.getenv('UUID', ''),
         'endpoint': os.getenv('ENDPOINT', ''),
         'chain_id':  os.getenv('CHAIN_ID', ''),
-        'gas_info': {
-            'max_fee': 4000001,
-        },
         'debug': debug,
     })
 

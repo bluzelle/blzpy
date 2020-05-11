@@ -16,31 +16,24 @@ class TestOptions(unittest.TestCase):
 
     def test_validates_gas_info(self):
         with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info should be a dict of {gas_price, max_fee, max_gas}"):
-            bluzelle.new_client({
-                "address": "1",
-                "mnemonic": "1",
-                "gas_info": ""
-            })
+            Client.validate_gas_info("")
         with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info should be a dict of {gas_price, max_fee, max_gas}"):
-            bluzelle.new_client({
-                "address": "1",
-                "mnemonic": "1",
-                "gas_info": 1
-            })
+            Client.validate_gas_info(1)
         with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info should be a dict of {gas_price, max_fee, max_gas}"):
-            bluzelle.new_client({
-                "address": "1",
-                "mnemonic": "1",
-                "gas_info": []
+            Client.validate_gas_info([])
+        with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info\[max_fee\] should be an int"):
+            Client.validate_gas_info({
+                "max_fee": ""
+            })
+        with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info\[max_gas\] should be an int"):
+            Client.validate_gas_info({
+                "max_gas": ""
             })
         with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info\[gas_price\] should be an int"):
-            bluzelle.new_client({
-                "address": "1",
-                "mnemonic": "1",
-                "gas_info": {
-                    "gas_price": ""
-                }
+            Client.validate_gas_info({
+                "gas_price": ""
             })
+
     def test_validates_mnemonic_and_address(self):
         with self.assertRaisesRegex(bluzelle.OptionsError, "bad credentials\(verify your address and mnemonic\)"):
             bluzelle.new_client({

@@ -22,18 +22,18 @@ client = bluzelle.new_client({
     'uuid':     os.getenv('UUID', ''),
     'endpoint': os.getenv('ENDPOINT', ''),
     'chain_id':  os.getenv('CHAIN_ID', ''),
-    'gas_info': {
-        'max_fee': 4000001,
-    },
     'debug': debug,
 })
 
 key = '%i' % time.time()
 value = 'bar'
+gas_info = {
+    'max_fee': 4000001,
+}
 
 print('creating %s=%s' % (key, value))
 try:
-    client.create(key, value)
+    client.create(key, value, gas_info)
     print('created key')
 except bluzelle.APIError as err:
     print('error creating key %s' % (err))
@@ -49,6 +49,6 @@ else:
         try:
             print()
             print('deleting key')
-            client.delete(key)
+            client.delete(key, gas_info)
         except bluzelle.APIError as err:
             print('deleted key')

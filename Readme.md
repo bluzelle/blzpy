@@ -13,18 +13,17 @@ Use:
 ```python
 import bluzelle
 
+gas_info = {
+  'max_fee': 4000001,
+}
 client = bluzelle.new_client({
     'address':  '...',
     'mnemonic': '...',
-    'gas_info': {
-      'max_fee': 4000001,
-    },
 })
-
-client.create('foo', 'bar')
+client.create('foo', 'bar', gas_info)
 value = client.read(key)
-client.update(key, 'baz')
-client.delete(key)
+client.update(key, 'baz', gas_info)
+client.delete(key, gas_info)
 ```
 
 ### Examples
