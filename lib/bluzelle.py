@@ -83,10 +83,7 @@ class Client:
         return self.send_transaction("post", "/crud/deleteall", {}, gas_info)
 
     def multi_update(self, payload, gas_info):
-      list = []
-      for key in payload:
-        list.append({"key": key, "value": payload[key]})
-      return self.send_transaction("post", "/crud/multiupdate", {"KeyValues": list}, gas_info)
+      return self.send_transaction("post", "/crud/multiupdate", {"KeyValues": payload}, gas_info)
 
     def renew_lease(self, key, gas_info, lease_info):
         self.send_transaction("post", "/crud/renewlease", {

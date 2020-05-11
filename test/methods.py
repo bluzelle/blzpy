@@ -82,9 +82,10 @@ class TestMethods(unittest.TestCase):
         self.client.create(self.key1, self.value1, self.gas_info)
         self.client.create(self.key2, self.value1, self.gas_info)
         #
-        data = {}
-        data[self.key1] = self.key1
-        data[self.key2] = self.key2
+        data = [
+            {"key": self.key1, "value": self.key1},
+            {"key": self.key2, "value": self.key2},
+        ]
         self.client.multi_update(data, self.gas_info)
         #
         self.assertEqual(self.client.read(self.key1), self.key1)
