@@ -30,7 +30,13 @@ class OptionsError(Exception):
 class APIError(Exception):
     def __init__(self, msg, apiError):
         self.message = msg
-        self.apiError = apiError
+        self.apiError = apiError or msg
+
+# api http error
+class APIHTTPError(Exception):
+    def __init__(self, response):
+        self.message = str(response.status_code)
+        self.response = response
 
 class Client:
     def __init__(self, options):
@@ -100,7 +106,14 @@ class Client:
             url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         else:
             url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        return self.api_query(url)['result']['value']
+        try:
+            return self.api_query(url)['result']['value']
+        except APIHTTPError as e:
+            if e.response.status_code == 404:
+                return {
+                    "error": "unknown request: key not found"
+                }
+        raise APIError("unknown error")
 
     def has(self, key):
         url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
@@ -174,6 +187,8 @@ class Client:
         url = self.options['endpoint'] + endpoint
         self.logger.debug('querying url(%s)...' % (url))
         response = requests.get(url)
+        if response.status_code == 404:
+            raise APIHTTPError(response)
         error = self.get_response_error(response)
         if error:
             raise error
