@@ -110,9 +110,9 @@ class Client:
             return self.api_query(url)['result']['value']
         except APIHTTPError as e:
             if e.response.status_code == 404:
-                return {
+                raise APIError("unknown request: key not found", {
                     "error": "unknown request: key not found"
-                }
+                })
         raise APIError("unknown error")
 
     def has(self, key):
