@@ -234,9 +234,9 @@ class Client:
         if len(fee.get('amount', [])) > 0:
             amount = int(fee['amount'][0]['amount'])
 
-        max_gas = gas_info.get('max_gas', None)
-        max_fee = gas_info.get('max_fee', None)
-        gas_price = gas_info.get('gas_price', None)
+        max_gas = gas_info.get('max_gas', 0)
+        max_fee = gas_info.get('max_fee', 0)
+        gas_price = gas_info.get('gas_price', 0)
 
         if max_gas != 0 and gas > max_gas:
             gas = max_gas
