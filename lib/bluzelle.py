@@ -217,7 +217,7 @@ class Client:
         response = getattr(requests, method)(
             url,
             data=payload,
-            headers={"content-type": "application/x-www-form-urlencoded"},
+            headers={"content-type": "application/json"},
             verify=False
         )
         self.logger.debug("%s" % response.text)
