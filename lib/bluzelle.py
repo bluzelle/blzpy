@@ -40,7 +40,7 @@ class OptionsError(Exception):
 
 # general api error
 class APIError(Exception):
-    def __init__(self, msg, api_error, api_response = None):
+    def __init__(self, msg, api_error = None, api_response = None):
         self.message = msg
         self.api_error = api_error or msg
         self.api_response = api_response
@@ -61,7 +61,11 @@ class Client:
 
     # mutate methods
 
-    def create(self, key, value, gas_info, lease_info = None, ):
+    def create(self, key, value, gas_info, lease_info = None):
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
+        if type(value) != str:
+            raise APIError(VALUE_MUST_BE_A_STRING)
         payload = { "Key": key }
         if lease_info != None:
             lease = Client.lease_info_to_blocks(lease_info)
@@ -72,6 +76,10 @@ class Client:
         return self.send_transaction("post", "/crud/create", payload, gas_info)
 
     def update(self, key, value, gas_info, lease_info = None):
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
+        if type(value) != str:
+            raise APIError(VALUE_MUST_BE_A_STRING)
         payload = { "Key": key }
         if lease_info != None:
             lease = Client.lease_info_to_blocks(lease_info)
@@ -82,11 +90,17 @@ class Client:
         return self.send_transaction("post", "/crud/update", payload, gas_info)
 
     def delete(self, key, gas_info):
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
         return self.send_transaction("delete", "/crud/delete", {
             "Key": key,
         }, gas_info)
 
     def rename(self, key, new_key, gas_info):
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
+        if type(new_key) != str:
+            raise APIError(NEW_KEY_MUST_BE_A_STRING)
         return self.send_transaction("post", "/crud/rename", {
             "Key": key,
             "NewKey": new_key,
@@ -99,6 +113,8 @@ class Client:
       return self.send_transaction("post", "/crud/multiupdate", {"KeyValues": payload}, gas_info)
 
     def renew_lease(self, key, gas_info, lease_info = None):
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
         payload = {
             "Key": key,
         }
@@ -124,6 +140,8 @@ class Client:
     # query methods
 
     def read(self, key, proof = None):
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
         if proof:
             url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         else:
@@ -131,6 +149,8 @@ class Client:
         return self.api_query(url)['result']['value']
 
     def has(self, key):
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
         url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         return self.api_query(url)['result']['has']
 
@@ -147,10 +167,14 @@ class Client:
         return self.api_query(url)['result']['keyvalues']
 
     def get_lease(self, key):
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
         url = "/crud/getlease/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         return Client.lease_blocks_to_seconds(int(self.api_query(url)['result']['lease']))
 
     def get_n_shortest_leases(self, n):
+        if n < 0:
+            raise APIError(INVALID_VALUE_SPECIFIED)
         url = "/crud/getnshortestleases/{uuid}/{n}".format(uuid=self.options["uuid"], n=str(n))
         kls = self.api_query(url)['result']['keyleases']
         for kl in kls:
@@ -159,12 +183,16 @@ class Client:
 
     #query tx methods
     def tx_read(self, key, gas_info):
-          res = self.send_transaction("post", "/crud/read", {
-              "Key": key,
-          }, gas_info)
-          return res['value']
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
+        res = self.send_transaction("post", "/crud/read", {
+            "Key": key,
+        }, gas_info)
+        return res['value']
 
     def tx_has(self, key, gas_info):
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
         res = self.send_transaction("post", "/crud/has", {
             "Key": key,
         }, gas_info)
@@ -183,12 +211,16 @@ class Client:
         return res['keyvalues']
 
     def tx_get_lease(self, key, gas_info):
+        if type(key) != str:
+            raise APIError(KEY_MUST_BE_A_STRING)
         res = self.send_transaction("post", "/crud/getlease", {
             "Key": key,
         }, gas_info)
         return Client.lease_blocks_to_seconds(int(res['lease']))
 
     def tx_get_n_shortest_leases(self, n, gas_info):
+        if n < 0:
+            raise APIError(INVALID_VALUE_SPECIFIED)
         res = self.send_transaction("post", "/crud/getnshortestleases", {
             "N": str(n),
         }, gas_info)

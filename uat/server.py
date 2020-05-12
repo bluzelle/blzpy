@@ -47,7 +47,6 @@ def uat():
     client_method = getattr(client, method)
     if not client_method:
         raise "unknown method %s" % client_method
-
     result = client_method(*args)
     if result == None:
         result = None
