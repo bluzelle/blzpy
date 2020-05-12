@@ -22,7 +22,6 @@ BROADCAST_MAX_RETRIES = 10
 BROADCAST_RETRY_INTERVAL_SECONDS = 1
 BLOCK_TIME_IN_SECONDS = 5
 
-KEY_DOES_NOT_EXIST = "Key does not exist"
 KEY_MUST_BE_A_STRING = "Key must be a string"
 NEW_KEY_MUST_BE_A_STRING = "New key must be a string"
 VALUE_MUST_BE_A_STRING = "Value must be a string"
@@ -99,25 +98,27 @@ class Client:
     def multi_update(self, payload, gas_info):
       return self.send_transaction("post", "/crud/multiupdate", {"KeyValues": payload}, gas_info)
 
-    def renew_lease(self, key, gas_info, lease_info):
+    def renew_lease(self, key, gas_info, lease_info = None):
         payload = {
             "Key": key,
         }
-        lease = Client.lease_info_to_blocks(lease_info)
-        if lease < 0:
-            raise APIError("", INVALID_LEASE_TIME)
-        payload["Lease"] = str(lease)
+        if lease_info != None:
+            lease = Client.lease_info_to_blocks(lease_info)
+            if lease < 0:
+                raise APIError("", INVALID_LEASE_TIME)
+            payload["Lease"] = str(lease)
         self.send_transaction("post", "/crud/renewlease", payload, gas_info)
 
-    def renew_all_leases(self, *args):
-        return self.renew_lease_all(*args)
+    def renew_all_leases(self, *args, **kwargs):
+        return self.renew_lease_all(*args, **kwargs)
 
-    def renew_lease_all(self, gas_info, lease_info):
+    def renew_lease_all(self, gas_info, lease_info = None):
         payload = {}
-        lease = Client.lease_info_to_blocks(lease_info)
-        if lease < 0:
-            raise APIError("", INVALID_LEASE_TIME)
-        payload["Lease"] = str(lease)
+        if lease_info != None:
+            lease = Client.lease_info_to_blocks(lease_info)
+            if lease < 0:
+                raise APIError("", INVALID_LEASE_TIME)
+            payload["Lease"] = str(lease)
         self.send_transaction("post", "/crud/renewleaseall", payload, gas_info)
 
     # query methods
@@ -127,12 +128,7 @@ class Client:
             url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         else:
             url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
-        try:
-            return self.api_query(url)['result']['value']
-        except APIError as e:
-            if e.api_response.status_code == 404:
-                raise APIError(KEY_DOES_NOT_EXIST, KEY_DOES_NOT_EXIST)
-            raise e
+        return self.api_query(url)['result']['value']
 
     def has(self, key):
         url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
