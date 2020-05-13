@@ -48,6 +48,9 @@ class TestMethods(unittest.TestCase):
               "max_fee": 1
             })
 
+    def test_create_with_key_containing_symbols(self):
+        self.client.create(self.key1 + "#$%&", self.value1, self.gas_info)
+
     def test_update(self):
         self.client.create(self.key1, self.value1, self.gas_info)
         self.client.update(self.key1, self.value2, self.gas_info)

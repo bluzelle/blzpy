@@ -8,6 +8,7 @@ import time
 import hashlib
 import bech32
 import math
+import re
 from .mnemonic_utils import mnemonic_to_private_key
 from ecdsa import SigningKey, SECP256k1
 
@@ -70,7 +71,7 @@ class Client:
         if lease_info != None:
             lease = Client.lease_info_to_blocks(lease_info)
             if lease < 0:
-                raise APIError("", INVALID_LEASE_TIME)
+                raise APIError(INVALID_LEASE_TIME)
             payload["Lease"] = str(lease)
         payload["Value"] = value
         return self.send_transaction("post", "/crud/create", payload, gas_info)
@@ -84,7 +85,7 @@ class Client:
         if lease_info != None:
             lease = Client.lease_info_to_blocks(lease_info)
             if lease < 0:
-                raise APIError("", INVALID_LEASE_TIME)
+                raise APIError(INVALID_LEASE_TIME)
             payload["Lease"] = str(lease)
         payload["Value"] = value
         return self.send_transaction("post", "/crud/update", payload, gas_info)
@@ -121,7 +122,7 @@ class Client:
         if lease_info != None:
             lease = Client.lease_info_to_blocks(lease_info)
             if lease < 0:
-                raise APIError("", INVALID_LEASE_TIME)
+                raise APIError(INVALID_LEASE_TIME)
             payload["Lease"] = str(lease)
         self.send_transaction("post", "/crud/renewlease", payload, gas_info)
 
@@ -133,7 +134,7 @@ class Client:
         if lease_info != None:
             lease = Client.lease_info_to_blocks(lease_info)
             if lease < 0:
-                raise APIError("", INVALID_LEASE_TIME)
+                raise APIError(INVALID_LEASE_TIME)
             payload["Lease"] = str(lease)
         self.send_transaction("post", "/crud/renewleaseall", payload, gas_info)
 
@@ -244,7 +245,7 @@ class Client:
     def api_mutate(self, method, endpoint, payload):
         url = self.options['endpoint'] + endpoint
         self.logger.debug('mutating url({url}), method({method})...'.format(url=url, method=method))
-        payload = self.json_dumps(payload)
+        payload = Client.sanitize_string(self.json_dumps(payload))
         self.logger.debug("%s" % payload)
         response = getattr(requests, method)(
             url,
@@ -282,8 +283,6 @@ class Client:
         txn['memo'] = Client.make_random_string(32)
 
         # set txn gas
-        if gas_info == None:
-            raise OptionsError('please provide gas_info when initializing the client or in the transaction')
         Client.validate_gas_info(gas_info)
 
         fee = txn['fee']
@@ -385,6 +384,14 @@ class Client:
 
     def json_dumps(self, payload):
         return json.dumps(payload, sort_keys=True, separators=(',', ':'))
+
+    @classmethod
+    def sanitize_string(cls, s):
+        return re.sub(r"([&<>])", Client.sanitize_string_token, s)
+
+    @classmethod
+    def sanitize_string_token(cls, m):
+        return m.group(0).encode('ascii', 'backslashreplace').hex()
 
     @classmethod
     def make_random_string(cls, size):
