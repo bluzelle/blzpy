@@ -8,6 +8,8 @@ requests = "*"
 base58 = "*"
 ecdsa = "*"
 bech32 = "*"
+
+[dev-packages]
 python-dotenv = "*"
 gunicorn ='*'
 flask = '*'
