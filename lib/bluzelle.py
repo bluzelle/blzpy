@@ -246,7 +246,7 @@ class Client:
     def api_mutate(self, method, endpoint, payload):
         url = self.options['endpoint'] + endpoint
         self.logger.debug('mutating url({url}), method({method})...'.format(url=url, method=method))
-        payload = Client.sanitize_string(self.json_dumps(payload))
+        payload = self.json_dumps(payload)
         self.logger.debug("%s" % payload)
         response = getattr(requests, method)(
             url,
@@ -366,7 +366,7 @@ class Client:
             "msgs": txn["msg"],
             "sequence": str(self.bluzelle_account['sequence']),
         }
-        payload = self.json_dumps(payload)
+        payload = Client.sanitize_string(self.json_dumps(payload))
         self.logger.debug("sign %s" % payload)
         payload = bytes(payload, 'utf-8')
         return base64.b64encode(self.private_key.sign_deterministic(payload, hashfunc=hashlib.sha256)).decode("utf-8")
@@ -392,7 +392,7 @@ class Client:
 
     @classmethod
     def sanitize_string_token(cls, m):
-        return binascii.hexlify(m.group(0).encode('ascii')).decode()
+        return u"\\u00" + binascii.hexlify(m.group(0).encode('ascii')).decode()
 
     @classmethod
     def make_random_string(cls, size):
