@@ -53,6 +53,7 @@ class TestMethods(unittest.TestCase):
         self.client.create(k, self.value1, self.gas_info)
         keys = self.client.keys()
         self.assertTrue(k in keys, 'keys failed: %s not found in keys %s' % (k, keys))
+        self.client.read(k)
 
     def test_update(self):
         self.client.create(self.key1, self.value1, self.gas_info)

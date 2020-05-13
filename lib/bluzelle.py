@@ -10,6 +10,7 @@ import bech32
 import math
 import re
 import binascii
+import urllib.parse
 from .mnemonic_utils import mnemonic_to_private_key
 from ecdsa import SigningKey, SECP256k1
 
@@ -145,15 +146,15 @@ class Client:
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
         if proof:
-            url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+            url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=Client.encode_safe(key))
         else:
-            url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+            url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=Client.encode_safe(key))
         return self.api_query(url)['result']['value']
 
     def has(self, key):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
-        url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=Client.encode_safe(key))
         return self.api_query(url)['result']['has']
 
     def count(self):
@@ -171,7 +172,7 @@ class Client:
     def get_lease(self, key):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
-        url = "/crud/getlease/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
+        url = "/crud/getlease/{uuid}/{key}".format(uuid=self.options["uuid"], key=Client.encode_safe(key))
         return Client.lease_blocks_to_seconds(int(self.api_query(url)['result']['lease']))
 
     def get_n_shortest_leases(self, n):
@@ -393,6 +394,14 @@ class Client:
     @classmethod
     def sanitize_string_token(cls, m):
         return u"\\u00" + binascii.hexlify(m.group(0).encode('ascii')).decode()
+
+    @classmethod
+    def encode_safe(cls, s):
+        return re.sub(r"([\#\?])", Client.encode_safe_token, urllib.parse.quote(s, safe=''))
+
+    @classmethod
+    def encode_safe_token(cls, m):
+        return u"%" + binascii.hexlify(m.group(0).encode('ascii')).decode()
 
     @classmethod
     def make_random_string(cls, size):
