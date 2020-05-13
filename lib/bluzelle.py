@@ -9,6 +9,7 @@ import hashlib
 import bech32
 import math
 import re
+import binascii
 from .mnemonic_utils import mnemonic_to_private_key
 from ecdsa import SigningKey, SECP256k1
 
@@ -391,7 +392,7 @@ class Client:
 
     @classmethod
     def sanitize_string_token(cls, m):
-        return m.group(0).encode('ascii', 'backslashreplace').hex()
+        return binascii.hexlify(m.group(0).encode('ascii')).decode()
 
     @classmethod
     def make_random_string(cls, size):
