@@ -17,8 +17,8 @@ gas_info = {
   'max_fee': 4000001,
 }
 client = bluzelle.new_client({
-    'address':  '...',
-    'mnemonic': '...',
+  'address':  '...',
+  'mnemonic': '...',
 })
 client.create('foo', 'bar', gas_info)
 value = client.read(key)
