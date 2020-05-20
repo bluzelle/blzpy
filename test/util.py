@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-mnemonic = os.getenv('MNEMONIC', '')
+ADDRESS = os.getenv('ADDRESS', '')
 
 def new_client():
     d = os.getenv('DEBUG', 'false')
@@ -19,7 +19,7 @@ def new_client():
         pass
 
     return bluzelle.new_client({
-        'mnemonic': mnemonic,
+        'mnemonic': os.getenv('MNEMONIC', ''),
         'uuid':     os.getenv('UUID', ''),
         'endpoint': os.getenv('ENDPOINT', ''),
         'chain_id':  os.getenv('CHAIN_ID', ''),

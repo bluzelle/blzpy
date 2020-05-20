@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import time
-from .util import new_client, bluzelle, mnemonic, Client
+from .util import new_client, bluzelle, ADDRESS, Client
 
 class TestOptions(unittest.TestCase):
     def test_requires_mnemonic(self):
@@ -32,6 +32,10 @@ class TestOptions(unittest.TestCase):
             Client.validate_gas_info({
                 "gas_price": ""
             })
+
+    def test_correctly_derives_address(self):
+        c = new_client()
+        self.assertEqual(c.address, ADDRESS)
 
 class TestLease(unittest.TestCase):
   def test_converts_blocks_to_seconds(self):

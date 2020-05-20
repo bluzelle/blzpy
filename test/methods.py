@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import time
-from .util import new_client, bluzelle, key_values_to_dict, mnemonic
+from .util import new_client, bluzelle, key_values_to_dict
 
 class TestMethods(unittest.TestCase):
     @classmethod
