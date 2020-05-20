@@ -4,14 +4,13 @@ import time
 from .util import new_client, bluzelle, mnemonic, Client
 
 class TestOptions(unittest.TestCase):
-    def test_requires_address(self):
-        with self.assertRaisesRegex(bluzelle.OptionsError, "address is required"):
-            bluzelle.new_client({})
-
     def test_requires_mnemonic(self):
         with self.assertRaisesRegex(bluzelle.OptionsError, "mnemonic is required"):
             bluzelle.new_client({
-                "address": "1"
+            })
+        with self.assertRaisesRegex(bluzelle.OptionsError, "mnemonic must be a string"):
+            bluzelle.new_client({
+                'mnemonic': 1
             })
 
     def test_validates_gas_info(self):
@@ -33,14 +32,6 @@ class TestOptions(unittest.TestCase):
             Client.validate_gas_info({
                 "gas_price": ""
             })
-
-    def test_validates_mnemonic_and_address(self):
-        with self.assertRaisesRegex(bluzelle.OptionsError, "bad credentials\(verify your address and mnemonic\)"):
-            bluzelle.new_client({
-                "address": "1",
-                "mnemonic": mnemonic
-            })
-
 
 class TestLease(unittest.TestCase):
   def test_converts_blocks_to_seconds(self):

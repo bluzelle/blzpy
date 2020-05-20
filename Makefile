@@ -1,13 +1,13 @@
 o=$(o)
 
 test:
-	@$(MAKE) test-options-all
-	@$(MAKE) test-methods-all
+	@$(MAKE) test-all-options
+	@$(MAKE) test-all-methods
 
-test-methods-all:
+test-all-methods:
 	@python -m unittest --failfast test.methods
 
-test-options-all:
+test-all-options:
 	@python -m unittest --failfast test.options
 
 # e.g. make test o=rename
@@ -31,8 +31,8 @@ uat:
 	@FLASK_APP="uat:app" FLASK_ENV=development flask run --port=4561
 
 .PHONY: test \
-	test-methods-all \
-	test-options-all \
+	test-all-methods \
+	test-all-options \
 	test-methods \
 	test-options \
 	example \

@@ -17,7 +17,6 @@ except Exception:
     pass
 
 client = bluzelle.new_client({
-    'address':  os.getenv('ADDRESS', ''),
     'mnemonic': os.getenv('MNEMONIC', ''),
     'uuid':     os.getenv('UUID', ''),
     'endpoint': os.getenv('ENDPOINT', ''),

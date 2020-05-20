@@ -55,7 +55,7 @@ class Client:
     #
 
     def account(self):
-        url = "/auth/accounts/%s" % self.options["address"]
+        url = "/auth/accounts/%s" % self.address
         return self.api_query(url)['result']['value']
 
     def version(self):
@@ -145,10 +145,11 @@ class Client:
     def read(self, key, proof = None):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        key = Client.encode_safe(key)
         if proof:
-            url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=Client.encode_safe(key))
+            url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         else:
-            url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=Client.encode_safe(key))
+            url = "/crud/read/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
         return self.api_query(url)['result']['value']
 
     def has(self, key):
@@ -269,13 +270,12 @@ class Client:
         return self.broadcast_transaction(txn, gas_info)
 
     def validate_transaction(self, method, endpoint, payload):
-        address = self.options['address']
         payload.update({
             "BaseReq": {
                 "chain_id": self.options['chain_id'],
-                "from": address,
+                "from": self.address,
             },
-            "Owner": address,
+            "Owner": self.address,
             "UUID": self.options['uuid'],
         })
         return self.api_mutate(method, endpoint, payload)['value']
@@ -423,7 +423,7 @@ class Client:
             curve=SECP256k1
         )
 
-    def verify_address(self):
+    def set_address(self):
         pk = self.private_key.verifying_key.to_string("compressed")
 
         h = hashlib.new('sha256')
@@ -434,9 +434,7 @@ class Client:
         h.update(s)
         r = h.digest()
 
-        address = bech32.bech32_encode(ADDRESS_PREFIX, bech32.convertbits(r, 8, 5, True))
-        if address != self.options['address']:
-            raise OptionsError('bad credentials(verify your address and mnemonic)')
+        self.address = bech32.bech32_encode(ADDRESS_PREFIX, bech32.convertbits(r, 8, 5, True))
 
     @classmethod
     def lease_info_to_blocks(cls, lease_info):
@@ -489,7 +487,6 @@ class Client:
 
 # initialize new client with provided `options`
 # @param options
-#   @required address
 #   @required mnemonic
 #   @optional chain_id
 #   @optional endpoint
@@ -497,10 +494,11 @@ class Client:
 #   @optional debug
 def new_client(options):
     # validate options
-    if not ('address' in options):
-        raise OptionsError('address is required')
 
-    if not ('mnemonic' in options):
+    mnemonic = options.get('mnemonic', '')
+    if type(mnemonic) != str:
+        raise OptionsError(MNEMONIC_MUST_BE_A_STRING)
+    if not mnemonic:
         raise OptionsError('mnemonic is required')
 
     if not ('debug' in options):
@@ -520,8 +518,8 @@ def new_client(options):
     # private key
     client.set_private_key()
 
-    # verify address
-    client.verify_address()
+    # set address
+    client.set_address()
 
     # account
     client.set_account()
