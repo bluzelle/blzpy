@@ -400,7 +400,9 @@ class Client:
 
     @classmethod
     def encode_safe(cls, s):
-        return re.sub(r"([\#\?])", Client.encode_safe_token, urllib.parse.quote(s, safe=''))
+        a = urllib.parse.quote(s, safe='~@#$&()*!+=:;,.?/\'')
+        b = re.sub(r"([\#\?])", Client.encode_safe_token, a)
+        return b
 
     @classmethod
     def encode_safe_token(cls, m):
