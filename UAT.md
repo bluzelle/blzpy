@@ -5,7 +5,7 @@ The following guide describe setting up the project and running an example code 
 1. Ensure python3 and pip3 are installed:
 
 ```
-apt install -y python3 python3-pip
+sudo apt install -y python3 python3-pip
 ```
 
 2. Install pipenv:

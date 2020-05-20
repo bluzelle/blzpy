@@ -13,6 +13,17 @@ class TestOptions(unittest.TestCase):
                 'mnemonic': 1
             })
 
+    def test_requires_uuid(self):
+        with self.assertRaisesRegex(bluzelle.OptionsError, "uuid is required"):
+            bluzelle.new_client({
+                'mnemonic': '...',
+            })
+        with self.assertRaisesRegex(bluzelle.OptionsError, "uuid must be a string"):
+            bluzelle.new_client({
+                'mnemonic': '...',
+                'uuid': 1,
+            })
+
     def test_validates_gas_info(self):
         with self.assertRaisesRegex(bluzelle.OptionsError, "gas_info should be a dict of {gas_price, max_fee, max_gas}"):
             Client.validate_gas_info("")

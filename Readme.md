@@ -32,7 +32,7 @@ client.delete(key, gas_info)
 
 ### Examples
 
-Copy `.env.sample` to `.env` and configure appropriately.
+Copy `.env.sample` to `.env` and configure if needed.
 
 ```
 cp .env.sample .env
