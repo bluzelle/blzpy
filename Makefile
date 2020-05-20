@@ -5,17 +5,17 @@ test:
 	@$(MAKE) test-all-methods
 
 test-all-methods:
-	@python -m unittest --failfast test.methods
+	@python -m unittest --failfast test.methods -vv
 
 test-all-options:
-	@python -m unittest --failfast test.options
+	@python -m unittest --failfast test.options -vv
 
 # e.g. make test o=rename
 test-methods:
-	@python -m unittest --failfast test.methods.TestMethods.test_$o
+	@python -m unittest --failfast test.methods.TestMethods.test_$o -vv
 
 test-options:
-	@python -m unittest --failfast test.options.TestOptions.test_$o
+	@python -m unittest --failfast test.options.TestOptions.test_$o -vv
 
 example:
 	@python examples/crud.py

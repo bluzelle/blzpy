@@ -61,7 +61,7 @@ make test
 ```
 
 This will run all the tests in the `test` directory using the same environment settings defined in the `.env` file.
-Note that sometimes one or 2 tests fail due to some existing issues with the testnet. A successful run should result in an output like this:
+Note that sometimes one or 2 tests fail due to some existing issues with the testnet. A successful run should however result in an output like this:
 
 ```
 ...........................
