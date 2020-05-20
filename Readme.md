@@ -64,6 +64,10 @@ Then run the tests:
     make test
 ```
 
+### User Acceptance Testing
+
+Please checkout the [UAT.md](https://github.com/vbstreetz/blzpy/blob/master/Readme.md) document for more details.
+
 ### Licence
 
 MIT
