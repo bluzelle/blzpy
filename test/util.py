@@ -19,10 +19,10 @@ def new_client():
         pass
 
     return bluzelle.new_client({
-        'mnemonic': os.getenv('MNEMONIC', ''),
-        'uuid':     os.getenv('UUID', ''),
-        'endpoint': os.getenv('ENDPOINT', ''),
-        'chain_id':  os.getenv('CHAIN_ID', ''),
+        'mnemonic': os.getenv('MNEMONIC', None),
+        'uuid':     os.getenv('UUID', None),
+        'endpoint': os.getenv('ENDPOINT', None),
+        'chain_id':  os.getenv('CHAIN_ID', None),
         'debug': debug,
     })
 

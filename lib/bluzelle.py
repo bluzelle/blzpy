@@ -490,12 +490,15 @@ class Client:
 
     @classmethod
     def validate_option(cls, options, option_name, err_msg, default = ''):
-        val = options.get(option_name, default)
+        val = options.get(option_name, None)
+        if not val:
+            val = default
         if type(val) != str:
             raise OptionsError(err_msg)
         if not val:
             raise OptionsError('%s is required' % option_name)
-
+        options[option_name] = val
+        
 # initialize new client with provided `options`
 # @param options
 #   @required mnemonic
@@ -510,7 +513,7 @@ def new_client(options):
         options['debug'] = False
     Client.validate_option(options, 'mnemonic', MNEMONIC_MUST_BE_A_STRING)
     Client.validate_option(options, 'uuid', UUID_MUST_BE_A_STRING)
-    Client.validate_option(options, 'mnemonic', CHAIN_ID_MUST_BE_A_STRING, DEFAULT_CHAIN_ID)
+    Client.validate_option(options, 'chain_id', CHAIN_ID_MUST_BE_A_STRING, DEFAULT_CHAIN_ID)
     Client.validate_option(options, 'endpoint', ENDPOINT_MUST_BE_A_STRING, DEFAULT_ENDPOINT)
 
     client = Client(options)
