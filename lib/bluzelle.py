@@ -37,6 +37,9 @@ MNEMONIC_MUST_BE_A_STRING = "mnemonic must be a string"
 UUID_MUST_BE_A_STRING = "uuid must be a string"
 INVALID_TRANSACTION = "Invalid transaction."
 
+CHAIN_ID_MUST_BE_A_STRING = 'chain_id must be a string'
+ENDPOINT_MUST_BE_A_STRING = 'endpoint must be a string'
+
 # client option validation error
 class OptionsError(Exception):
     pass
@@ -485,6 +488,14 @@ class Client:
             gas_info[k] = v
         return gas_info
 
+    @classmethod
+    def validate_option(cls, options, option_name, err_msg, default = ''):
+        val = options.get(option_name, default)
+        if type(val) != str:
+            raise OptionsError(err_msg)
+        if not val:
+            raise OptionsError('%s is required' % option_name)
+
 # initialize new client with provided `options`
 # @param options
 #   @required mnemonic
@@ -495,20 +506,12 @@ class Client:
 def new_client(options):
     # validate options
 
-    mnemonic = options.get('mnemonic', '')
-    if type(mnemonic) != str:
-        raise OptionsError(MNEMONIC_MUST_BE_A_STRING)
-    if not mnemonic:
-        raise OptionsError('mnemonic is required')
-
     if not ('debug' in options):
         options['debug'] = False
-
-    if not options.get('chain_id', None):
-        options['chain_id'] = DEFAULT_CHAIN_ID
-
-    if not options.get('endpoint', None):
-        options['endpoint'] = DEFAULT_ENDPOINT
+    Client.validate_option(options, 'mnemonic', MNEMONIC_MUST_BE_A_STRING)
+    Client.validate_option(options, 'uuid', UUID_MUST_BE_A_STRING)
+    Client.validate_option(options, 'mnemonic', CHAIN_ID_MUST_BE_A_STRING, DEFAULT_CHAIN_ID)
+    Client.validate_option(options, 'endpoint', ENDPOINT_MUST_BE_A_STRING, DEFAULT_ENDPOINT)
 
     client = Client(options)
 

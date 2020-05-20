@@ -8,7 +8,6 @@ from lib.bluzelle import new_client, APIError
 load_dotenv()
 
 client = new_client({
-    'address':  os.getenv('ADDRESS', ''),
     'mnemonic': os.getenv('MNEMONIC', ''),
     'uuid':     os.getenv('UUID', ''),
     'endpoint': os.getenv('ENDPOINT', ''),
@@ -44,5 +43,5 @@ def uat():
     client_method = getattr(client, method)
     if not client_method:
         raise "unknown method %s" % client_method
-    
+
     return jsonify(client_method(*args))
