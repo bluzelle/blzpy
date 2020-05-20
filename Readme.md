@@ -13,14 +13,18 @@ Use:
 ```python
 import bluzelle
 
-gas_info = {
-  'max_fee': 4000001,
-}
 client = bluzelle.new_client({
   'address':  '...',
   'mnemonic': '...',
 })
-client.create('foo', 'bar', gas_info)
+
+gas_info = {
+  'max_fee': 4000001,
+}
+
+key = 'foo'
+
+client.create(key, 'bar', gas_info)
 value = client.read(key)
 client.update(key, 'baz', gas_info)
 client.delete(key, gas_info)
@@ -28,7 +32,13 @@ client.delete(key, gas_info)
 
 ### Examples
 
-Copy `.env.sample` to `.env` and configure appropriately. You can also use this test [file](https://gist.github.com/vbstreetz/f05a982530311d155836e27d41c1f73a). Then run the example:
+Copy `.env.sample` to `.env` and configure appropriately.
+
+```
+cp .env.sample .env
+```
+
+Then run the example:
 
 ```
     DEBUG=false python examples/crud.py

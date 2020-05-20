@@ -13,9 +13,6 @@ client = new_client({
     'uuid':     os.getenv('UUID', ''),
     'endpoint': os.getenv('ENDPOINT', ''),
     'chain_id':  os.getenv('CHAIN_ID', ''),
-    'gas_info': {
-        'max_fee': 4000001,
-    },
     'debug': True,
 })
 
@@ -47,7 +44,5 @@ def uat():
     client_method = getattr(client, method)
     if not client_method:
         raise "unknown method %s" % client_method
-    result = client_method(*args)
-    if result == None:
-        result = None
-    return jsonify(result)
+    
+    return jsonify(client_method(*args))
