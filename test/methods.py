@@ -49,7 +49,7 @@ class TestMethods(unittest.TestCase):
             })
 
     def test_create_with_key_containing_symbols(self):
-        k = self.key1 + "#$%&"
+        k = self.key1 + " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
         self.client.create(k, self.value1, self.gas_info)
         keys = self.client.keys()
         self.assertTrue(k in keys, 'keys failed: %s not found in keys %s' % (k, keys))

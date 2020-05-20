@@ -1,20 +1,20 @@
 o=$(o)
 
 test:
-	@$(MAKE) test-all-options
-	@$(MAKE) test-all-methods
+	@$(MAKE) test-options
+	@$(MAKE) test-methods
 
-test-all-methods:
+test-methods:
 	@python -m unittest --failfast test.methods -vv
 
-test-all-options:
+test-options:
 	@python -m unittest --failfast test.options -vv
 
-# e.g. make test o=rename
-test-methods:
+# e.g. make test-method o=rename
+test-method:
 	@python -m unittest --failfast test.methods.TestMethods.test_$o -vv
 
-test-options:
+test-option:
 	@python -m unittest --failfast test.options.TestOptions.test_$o -vv
 
 example:
@@ -31,10 +31,10 @@ uat:
 	@FLASK_APP="uat:app" FLASK_ENV=development flask run --port=4561
 
 .PHONY: test \
-	test-all-methods \
-	test-all-options \
 	test-methods \
 	test-options \
+	test-method \
+	test-option \
 	example \
 	shell \
 	deploy \
