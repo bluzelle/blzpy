@@ -112,6 +112,7 @@ class Client:
         Client.validate_key(key)
         if type(new_key) != str:
             raise APIError(NEW_KEY_MUST_BE_A_STRING)
+        Client.validate_key(new_key)
         return self.send_transaction("post", "/crud/rename", {
             "Key": key,
             "NewKey": new_key,
