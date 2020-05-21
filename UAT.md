@@ -1,6 +1,6 @@
 ### User Acceptance Testing
 
-The following guide describe setting up the project and running an example code and tests in an Ubuntu 18.04 machine. Once ssh'd into the machine:
+The following guide describes setting up the project and running an example code and tests in an Ubuntu 18.04 machine. Once ssh'd into the machine:
 
 1. Ensure python3 and pip3 are installed:
 
@@ -60,8 +60,7 @@ This example code performs simple CRUD operations against the testnet.
 make test
 ```
 
-This will run all the tests in the `test` directory using the same environment settings defined in the `.env` file.
-Note that sometimes one or 2 tests fail due to some existing issues with the testnet. A successful run should however result in an output like this:
+This will run all the tests in the `test` directory using the same environment settings defined in the `.env` file. A successful run should result in an output like this:
 
 ```
 ...........................

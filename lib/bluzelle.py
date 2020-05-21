@@ -36,6 +36,7 @@ ADDRESS_MUST_BE_A_STRING = "address must be a string"
 MNEMONIC_MUST_BE_A_STRING = "mnemonic must be a string"
 UUID_MUST_BE_A_STRING = "uuid must be a string"
 INVALID_TRANSACTION = "Invalid transaction."
+KEY_CANNOT_CONTAIN_A_SLASH = "Key cannot contain a slash"
 
 CHAIN_ID_MUST_BE_A_STRING = 'chain_id must be a string'
 ENDPOINT_MUST_BE_A_STRING = 'endpoint must be a string'
@@ -70,6 +71,7 @@ class Client:
     def create(self, key, value, gas_info, lease_info = None):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         if type(value) != str:
             raise APIError(VALUE_MUST_BE_A_STRING)
         payload = { "Key": key }
@@ -84,6 +86,7 @@ class Client:
     def update(self, key, value, gas_info, lease_info = None):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         if type(value) != str:
             raise APIError(VALUE_MUST_BE_A_STRING)
         payload = { "Key": key }
@@ -98,6 +101,7 @@ class Client:
     def delete(self, key, gas_info):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         return self.send_transaction("delete", "/crud/delete", {
             "Key": key,
         }, gas_info)
@@ -105,6 +109,7 @@ class Client:
     def rename(self, key, new_key, gas_info):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         if type(new_key) != str:
             raise APIError(NEW_KEY_MUST_BE_A_STRING)
         return self.send_transaction("post", "/crud/rename", {
@@ -121,6 +126,7 @@ class Client:
     def renew_lease(self, key, gas_info, lease_info = None):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         payload = {
             "Key": key,
         }
@@ -148,6 +154,7 @@ class Client:
     def read(self, key, proof = None):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         key = Client.encode_safe(key)
         if proof:
             url = "/crud/pread/{uuid}/{key}".format(uuid=self.options["uuid"], key=key)
@@ -158,6 +165,7 @@ class Client:
     def has(self, key):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         url = "/crud/has/{uuid}/{key}".format(uuid=self.options["uuid"], key=Client.encode_safe(key))
         return self.api_query(url)['result']['has']
 
@@ -176,6 +184,7 @@ class Client:
     def get_lease(self, key):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         url = "/crud/getlease/{uuid}/{key}".format(uuid=self.options["uuid"], key=Client.encode_safe(key))
         return Client.lease_blocks_to_seconds(int(self.api_query(url)['result']['lease']))
 
@@ -192,6 +201,7 @@ class Client:
     def tx_read(self, key, gas_info):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         res = self.send_transaction("post", "/crud/read", {
             "Key": key,
         }, gas_info)
@@ -200,6 +210,7 @@ class Client:
     def tx_has(self, key, gas_info):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         res = self.send_transaction("post", "/crud/has", {
             "Key": key,
         }, gas_info)
@@ -220,6 +231,7 @@ class Client:
     def tx_get_lease(self, key, gas_info):
         if type(key) != str:
             raise APIError(KEY_MUST_BE_A_STRING)
+        Client.validate_key(key)
         res = self.send_transaction("post", "/crud/getlease", {
             "Key": key,
         }, gas_info)
@@ -500,7 +512,12 @@ class Client:
         if not val:
             raise OptionsError('%s is required' % option_name)
         options[option_name] = val
-        
+
+    @classmethod
+    def validate_key(cls, key):
+        if '/' in key:
+            raise OptionsError(KEY_CANNOT_CONTAIN_A_SLASH)
+    
 # initialize new client with provided `options`
 # @param options
 #   @required mnemonic
