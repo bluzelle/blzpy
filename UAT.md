@@ -1,6 +1,6 @@
 ### User Acceptance Testing
 
-The following guide describes setting up the project and running an example code and tests in an Ubuntu 18.04 machine. Once ssh'd into the machine:
+The following guide describes setting up the project and running an example code and tests in an AWS Ubuntu 18.04 machine. Once ssh'ed into the machine:
 
 1. Ensure the system package index is up to date:
 
