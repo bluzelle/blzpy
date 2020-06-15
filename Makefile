@@ -23,6 +23,9 @@ example:
 shell:
 	@~/homebrew/bin/python3 -m pipenv shell
 
+pip:
+	@~/homebrew/bin/python3 -m pipenv install --dev
+
 deploy:
 	@python setup.py sdist bdist_wheel
 	@twine upload dist/*
@@ -38,4 +41,5 @@ uat:
 	example \
 	shell \
 	deploy \
+	pip \
 	uat
