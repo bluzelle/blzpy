@@ -6,7 +6,9 @@ Ensure you have a recent version of [Python 3](https://www.python.org/) installe
 
 Grab the package from github:
 
-    $ pipenv install git+https://github.com/vbstreetz/blzpy.git#egg=bluzelle
+```
+pipenv install git+https://github.com/vbstreetz/blzpy.git#egg=bluzelle
+```
 
 Use:
 
@@ -41,7 +43,7 @@ cp .env.sample .env
 Then run the example:
 
 ```
-    DEBUG=false python examples/crud.py
+DEBUG=false python examples/crud.py
 ```
 
 ### Tests
@@ -49,19 +51,19 @@ Then run the example:
 The `tests/` can best be run in a [pipenv](https://github.com/pypa/pipenv) environment. To do so, initialize one with:
 
 ```
-    pipenv --python 3
+pipenv --python 3
 ```
 
 Install requirements:
 
 ```
-    pipenv install
+pipenv install
 ```
 
 Then run the tests:
 
 ```
-    make test
+make test
 ```
 
 ### User Acceptance Testing
