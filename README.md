@@ -7,7 +7,7 @@ Ensure you have a recent version of [Python 3](https://www.python.org/) installe
 Grab the package from github:
 
 ```
-pipenv install git+https://github.com/vbstreetz/blzpy.git#egg=bluzelle
+pipenv install git+https://github.com/bluzelle/blzpy.git#egg=bluzelle
 ```
 
 Use:
@@ -68,7 +68,7 @@ make test
 
 ### User Acceptance Testing
 
-Please checkout the [UAT.md](https://github.com/vbstreetz/blzpy/blob/master/UAT.md) document for more details.
+Please checkout the [UAT.md](https://github.com/bluzelle/blzpy/blob/master/UAT.md) document for more details.
 
 ### Licence
 

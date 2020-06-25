@@ -25,7 +25,7 @@ Pipenv will be used to create an isolated python environment for the project by 
 4. Clone and initialize a new pipenv environment for the project:
 
 ```
-git clone https://github.com/vbstreetz/blzpy.git
+git clone https://github.com/bluzelle/blzpy.git
 cd blzpy
 pipenv --python 3
 ```
