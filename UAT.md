@@ -14,7 +14,7 @@ sudo apt -y update
 sudo apt install -y python3 python3-pip
 ```
 
-3. Install pipenv:
+3. Install pipenv AND THEN restart your environement (logout and login, for example):
 
 ```
 pip3 install pipenv
