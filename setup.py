@@ -7,7 +7,7 @@ from setuptools import setup
 # test_requirements = convert_deps_to_pip(pfile['dev-packages'], r=False)
 
 
-with open("Readme.md", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
