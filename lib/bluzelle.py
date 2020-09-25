@@ -60,7 +60,9 @@ class Client:
 
     def account(self):
         url = "/auth/accounts/%s" % self.address
-        return self.api_query(url)['result']['value']
+        account = self.api_query(url)['result']['value']
+        account['sequence'] = int(account['sequence'])
+        return account
 
     def version(self):
         url = "/node_info"
