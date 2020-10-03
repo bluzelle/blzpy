@@ -21,10 +21,10 @@ example:
 	@python examples/crud.py
 
 shell:
-	@~/homebrew/bin/python3 -m pipenv shell
+	@pipenv shell
 
 pip:
-	@~/homebrew/bin/python3 -m pipenv install --dev
+	@pipenv install --dev
 
 deploy:
 	@python setup.py sdist bdist_wheel
