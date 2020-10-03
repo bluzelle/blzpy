@@ -61,6 +61,7 @@ class Client:
     def account(self):
         url = "/auth/accounts/%s" % self.address
         account = self.api_query(url)['result']['value']
+        account['account_number'] = int(account['account_number'])
         account['sequence'] = int(account['sequence'])
         return account
 
